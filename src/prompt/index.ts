@@ -241,7 +241,7 @@ export async function multiselect<T>(opts: SelectOpts<T>): Promise<T[]> {
     else if (key === "space") {
       if (selected.has(index)) selected.delete(index);
       else selected.add(index);
-    } else if (key === "return") {
+    } else if (key === "enter") {
       const chosen = Array.from(selected).map((i) => options[i].value);
       raw.clearLines(options.length + 1);
       console.log(th.success(`${opts.message} ${chosen.length} selected`));

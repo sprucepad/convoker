@@ -1,4 +1,4 @@
-import { Command, log } from "convoker";
+import { Command } from "convoker";
 
 // Welcome to Convoker! This directory contains a few examples you can use
 // to build your own CLI application.
@@ -11,13 +11,8 @@ const program = new Command("examples")
   .description("Example Convoker application.")
   .version("0.1.0")
   // Convoker is middleware-based. Usually, the root middleware is for warning the user or setting up other aspects. It's the first thing that runs after parsing arguments.
-  .use(async () => {
-    // This is the only piece of Convoker that needs setup.
-    await log.setup();
-    // It creates streams. Instead of `.setup()`, you can also pass custom configuration:
-    await log.setConfig({ format: "json" });
-    // By default, the `format` is `text`, which prints everything as just plain text.
-  });
+  // The first argument is the input (see input.ts in this directory), and the second is the next in the chain. The `next` functions is asynchronous and returns a promise, so you must either also return it or await it.
+  .use((_, next) => next());
 
 // There are three main ways to define subcommands in Convoker.
 
@@ -41,7 +36,7 @@ program
     const a = 2;
     const b = 3;
     const c = a + b;
-    console.log(`${a} + ${b} =  ${c}`);
+    console.log(`${a} + ${b} = ${c}`);
   })
   .allowUnknownOptions()
   .allowSurpassArgLimit();
@@ -67,16 +62,15 @@ import { colorExample } from "./color";
 import { promptExample } from "./prompt";
 import { logExample } from "./log";
 
-// This is a current limitation of Convoker -- you can only add one command at a time.
-// This is a bug in the type definitions, and will be fixed.
-program.add(inputExample).add(colorExample).add(promptExample).add(logExample);
+program.add(inputExample, colorExample, promptExample, logExample);
 
 // You can run your program by calling `.run()`, which returns a promise:
-program.run().then(() => console.log("exited!"));
-// You can also optionally pass arguments. By default, it is your runtime's `argv`.
-// If you don't need your program to run, you can also use `.parse(argv)`:
-program.parse(["greet", "John"]).then(
-  ({
+async function main() {
+  await program.run();
+  // You can also optionally pass arguments. By default, it is your runtime's `argv`.
+
+  // If you don't need your program to run, you can also use `.parse(argv)`:
+  const {
     // The command to run. This is important if you have subcommands, otherwise you can just use `program`.
     command,
     // What errors happened during parsing. This includes things like "too many arguments" and "missing required option" wrapped in an `Error` object.
@@ -87,6 +81,10 @@ program.parse(["greet", "John"]).then(
     isHelp,
     // If `--version` was passed into the program.
     isVersion,
-  }) => {},
-);
-// `.parse()` does require that you pass the arguments manually.
+  } = await program.parse(["greet", "John"]);
+  // `.parse()` does require that you pass the arguments manually.
+
+  console.log("exited");
+}
+
+main();

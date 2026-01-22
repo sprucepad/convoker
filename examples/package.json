@@ -5,8 +5,7 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
-    "run": "tsx src/index.ts"
+    "start": "tsx src/index.ts"
   },
   "keywords": [
     "convoker",
@@ -16,7 +15,8 @@
   "license": "MIT",
   "packageManager": "pnpm@10.28.1",
   "dependencies": {
-    "convoker": "workspace:*"
+    "convoker": "workspace:*",
+    "zod": "^4.3.5"
   },
   "devDependencies": {
     "tsx": "^4.21.0"
