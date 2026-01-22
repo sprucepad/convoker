@@ -1,0 +1,24 @@
+{
+  "name": "@convoker/examples",
+  "version": "1.0.0",
+  "description": "Examples for using Convoker",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "run": "tsx src/index.ts"
+  },
+  "keywords": [
+    "convoker",
+    "examples"
+  ],
+  "author": "sprucepad",
+  "license": "MIT",
+  "packageManager": "pnpm@10.28.1",
+  "dependencies": {
+    "convoker": "workspace:*"
+  },
+  "devDependencies": {
+    "tsx": "^4.21.0"
+  }
+}

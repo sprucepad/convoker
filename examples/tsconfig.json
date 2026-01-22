@@ -1,0 +1,4 @@
+{
+  // You can have any tsconfig for Convoker.
+  "extends": "../tsconfig.json"
+}
