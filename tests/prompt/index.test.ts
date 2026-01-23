@@ -1,7 +1,7 @@
 import { describe, expect, test, vi, beforeEach } from "vitest";
 import * as prompt from "@/prompt";
 import * as raw from "@/prompt/raw";
-import { DEFAULT_THEME } from "@/color";
+import { DEFAULT_THEME } from "@/theme";
 
 vi.mock("@/prompt/raw", () => ({
   readLine: vi.fn(),

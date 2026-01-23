@@ -12,7 +12,7 @@ import {
   DEFAULT_CONFIG,
   WriteError,
 } from "@/log";
-import { DEFAULT_THEME, type Theme } from "@/color";
+import { DEFAULT_THEME, type Theme } from "@/theme";
 
 /**
  * Helper to create a writable stream we can control and inspect

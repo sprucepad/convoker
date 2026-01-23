@@ -3,7 +3,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
 
-import { DEFAULT_THEME, type Theme } from "@/color";
+import { DEFAULT_THEME, type Theme } from "@/theme";
 import { validate, type StandardSchemaV1 } from "@/input/standard-schema";
 import { InputValidationError } from "@/input/error";
 import * as raw from "./raw";

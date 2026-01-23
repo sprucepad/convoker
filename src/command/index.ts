@@ -1,7 +1,9 @@
 import process from "node:process";
 
-import { gray, cyan, bold, type Theme } from "@/color";
+import { gray, cyan, bold } from "@/color";
+import type { Theme } from "@/theme";
 import { setTheme as setPromptTheme } from "@/prompt";
+import { setTheme as setLogTheme } from "@/log";
 import {
   ConvokerError,
   HelpAskedError,
@@ -395,6 +397,7 @@ export class Command<T extends Input = Input> {
           command = command.$children.get(arg)!.command;
           if (command.$theme) {
             setPromptTheme(command.$theme);
+            setLogTheme(command.$theme);
           }
         } else {
           found = true;
