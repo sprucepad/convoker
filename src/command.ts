@@ -1,6 +1,7 @@
+import process from "node:process";
+
 import { gray, cyan, bold, type Theme } from "./color";
 import { setTheme as setPromptTheme } from "./prompt";
-import { setTheme as setLogTheme } from "./log";
 import {
   ConvokerError,
   HelpAskedError,
@@ -61,7 +62,7 @@ export interface ParseResult<T extends Input> {
  * Command action function.
  */
 export type ActionFn<T extends Input> = (
-  input: InferInput<T>
+  input: InferInput<T>,
 ) => any | Promise<any>;
 
 /**
@@ -69,7 +70,7 @@ export type ActionFn<T extends Input> = (
  */
 export type MiddlewareFn<T extends Input = Input> = (
   input: InferInput<T>,
-  next: () => Promise<any>
+  next: () => Promise<any>,
 ) => any | Promise<any>;
 
 /**
@@ -78,7 +79,7 @@ export type MiddlewareFn<T extends Input = Input> = (
 export type ErrorFn<T extends Input> = (
   command: Command<T>,
   errors: Error[],
-  input: Partial<InferInput<T>>
+  input: Partial<InferInput<T>>,
 ) => void | Promise<void>;
 
 /**
@@ -171,7 +172,7 @@ export class Command<T extends Input = Input> {
    * @returns this
    */
   alias(...aliases: string[]): this {
-    this.$names.concat(aliases);
+    this.$names.push(...aliases);
     this.$parent?.add(this);
     return this;
   }
@@ -237,16 +238,18 @@ export class Command<T extends Input = Input> {
   }
 
   /**
-   * Adds an existing command to this.
-   * @param command The command.
+   * Adds existing commands to this.
+   * @param commands The commands.
    * @returns this
    */
-  add(command: Command<any>): this {
-    command.$parent = this;
-    const alias = { command, alias: command.$names[0] };
-    for (let i = 0; i < command.$names.length; i++) {
-      if (i === 0) this.$children.set(command.$names[i], { command });
-      this.$children.set(command.$names[i], alias);
+  add(...commands: Command<any>[]): this {
+    for (const command of commands) {
+      command.$parent = this;
+      const alias = { command, alias: command.$names[0] };
+      for (let i = 0; i < command.$names.length; i++) {
+        if (i === 0) this.$children.set(command.$names[i], { command });
+        this.$children.set(command.$names[i], alias);
+      }
     }
     return this;
   }
@@ -266,13 +269,13 @@ export class Command<T extends Input = Input> {
   subCommand(
     names: string | string[],
     desc?: string,
-    version?: string
+    version?: string,
   ): Command<any>;
 
   subCommand(
     names: string | string[],
     descOrBuilder?: Builder | string,
-    version?: string
+    version?: string,
   ): Command<any> {
     if (typeof descOrBuilder === "function") {
       const command = new Command(names);
@@ -325,7 +328,7 @@ export class Command<T extends Input = Input> {
     function setOption(
       key: string,
       option: Option<any, any, any>,
-      value?: string
+      value?: string,
     ) {
       if (option.$kind === "boolean") {
         opts[key] = "true";
@@ -357,7 +360,7 @@ export class Command<T extends Input = Input> {
             setOption(
               key,
               option,
-              option.$kind === "boolean" ? undefined : argv[++i]
+              option.$kind === "boolean" ? undefined : argv[++i],
             );
           else setOption(key, option, value);
         }
@@ -392,7 +395,6 @@ export class Command<T extends Input = Input> {
           command = command.$children.get(arg)!.command;
           if (command.$theme) {
             setPromptTheme(command.$theme);
-            setLogTheme(command.$theme);
           }
         } else {
           found = true;
@@ -464,7 +466,7 @@ export class Command<T extends Input = Input> {
   }
 
   private buildInputMap(
-    ignoreParentMap?: boolean
+    ignoreParentMap?: boolean,
   ): Map<string | number, MapEntry> {
     const map = new Map<string | number, MapEntry>();
 
@@ -542,7 +544,7 @@ export class Command<T extends Input = Input> {
     const pad = (s: string, len: number) => s.padEnd(len, " ");
 
     console.log(
-      `${bold("usage:")} ${cyan(this.fullCommandPath())} ${gray("[options] [arguments]")}`
+      `${bold("usage:")} ${cyan(this.fullCommandPath())} ${gray("[options] [arguments]")}`,
     );
     if (this.$description) {
       console.log(`${this.$description}`);
@@ -560,7 +562,7 @@ export class Command<T extends Input = Input> {
     if (opts.length > 0) {
       console.log(bold("options:"));
       const longest = Math.max(
-        ...opts.map(({ entry }) => entry.$names.join(", ").length)
+        ...opts.map(({ entry }) => entry.$names.join(", ").length),
       );
       for (const { entry } of opts) {
         const names = entry.$names
@@ -597,8 +599,8 @@ export class Command<T extends Input = Input> {
           [...this.$children.values()].map((a) => [
             a.command.$names[0],
             a.command,
-          ])
-        ).values()
+          ]),
+        ).values(),
       );
 
       const longest = Math.max(...deduped.map((c) => c.$names[0].length));
@@ -608,7 +610,7 @@ export class Command<T extends Input = Input> {
       }
       console.log();
       console.log(
-        `run '${cyan(`${this.fullCommandPath()} <command> --help`)}' for more info on a command.`
+        `run '${cyan(`${this.fullCommandPath()} <command> --help`)}' for more info on a command.`,
       );
     }
   }
@@ -621,7 +623,7 @@ export class Command<T extends Input = Input> {
    */
   async handleErrors(
     errors: Error[],
-    input?: Partial<InferInput<T>>
+    input?: Partial<InferInput<T>>,
   ): Promise<this> {
     // eslint-disable-next-line -- necessary for traversing up the tree
     let command: Command<any> = this;
@@ -643,22 +645,13 @@ export class Command<T extends Input = Input> {
    * @returns this
    */
   async run(argv?: string[]): Promise<this> {
-    if (!argv) {
-      argv =
-        typeof Bun !== "undefined"
-          ? (Bun.argv.slice(2) as string[])
-          : typeof Deno !== "undefined"
-            ? (Deno.args as string[])
-            : (process.argv.slice(2) as string[]);
-    }
-
-    const result = await this.parse(argv);
+    const result = await this.parse(argv ?? process.argv.slice(2));
     if (result.isHelp) {
       result.command.handleErrors([new HelpAskedError(result.command)]);
       return this;
     } else if (result.isVersion) {
       console.log(
-        `${result.command.fullCommandPath()} version ${result.command.$version}`
+        `${result.command.fullCommandPath()} version ${result.command.$version}`,
       );
       return this;
     }
@@ -669,7 +662,7 @@ export class Command<T extends Input = Input> {
       } else if (!result.command.$fn) {
         await result.command.handleErrors(
           [new HelpAskedError(result.command), ...result.errors],
-          result.input
+          result.input,
         );
       } else {
         const middlewares = collectMiddlewares(result.command);
@@ -686,7 +679,7 @@ export class Command<T extends Input = Input> {
     } catch (e) {
       if (!(e instanceof Error)) {
         console.warn(
-          "[convoker] an error that is not instance of `Error` was thrown. this may cause undefined behavior."
+          "[convoker] an error that is not instance of `Error` was thrown. this may cause undefined behavior.",
         );
       }
       await result.command.handleErrors([e as Error]);
