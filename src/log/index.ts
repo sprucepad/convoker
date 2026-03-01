@@ -140,11 +140,13 @@ function format(msgs: any[], level: string): string {
         level,
       );
     case "text":
-    default:
+    default: {
+      const symbol = (th.symbols as any)[level];
       return colorize(
-        `[${timestamp}] [${(th.symbols as any)[level] ?? level}] ${msg}\n`,
+        `[${timestamp}] [${symbol ? `${symbol} ${level}` : level}] ${msg}\n`,
         level,
       );
+    }
   }
 }
 
