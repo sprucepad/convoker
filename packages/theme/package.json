@@ -1,6 +1,6 @@
 {
   "name": "@convoker/theme",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A simple CLI theming library.",
   "exports": {
     ".": {
@@ -23,6 +23,10 @@
     "convoker",
     "theme",
     "theming"
+  ],
+  "files": [
+    "src",
+    "dist"
   ],
   "author": "sprucepad",
   "license": "MIT",

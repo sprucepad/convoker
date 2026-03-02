@@ -1,6 +1,6 @@
 {
   "name": "@convoker/prompt",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A simple, type-safe CLI prompting library.",
   "exports": {
     ".": {
@@ -27,6 +27,10 @@
     "@convoker/theme": "workspace:*",
     "@convoker/input": "workspace:*"
   },
+  "files": [
+    "src",
+    "dist"
+  ],
   "author": "sprucepad",
   "license": "MIT",
   "packageManager": "pnpm@10.30.3",

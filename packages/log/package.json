@@ -1,6 +1,6 @@
 {
   "name": "@convoker/log",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A simple logging library.",
   "exports": {
     ".": {
@@ -17,6 +17,10 @@
   "keywords": [
     "convoker",
     "log"
+  ],
+  "files": [
+    "src",
+    "dist"
   ],
   "author": "sprucepad",
   "license": "MIT",
