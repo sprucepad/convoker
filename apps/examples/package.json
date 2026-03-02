@@ -13,10 +13,10 @@
   ],
   "author": "sprucepad",
   "license": "MIT",
-  "packageManager": "pnpm@10.28.1",
+  "packageManager": "pnpm@10.30.3",
   "dependencies": {
-    "convoker": "workspace:*",
-    "zod": "^4.3.5"
+    "@convoker/core": "workspace:*",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "tsx": "^4.21.0"
