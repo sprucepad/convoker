@@ -338,7 +338,7 @@ export class Command<T extends Input = Input> {
 
     let promptModule: { setTheme: (arg: Theme) => void } | null;
     try {
-      promptModule = await import("@convoker/prompt");
+      promptModule = await import("../../prompt/dist/prompts");
     } catch {
       promptModule = null;
     }

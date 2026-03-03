@@ -4,14 +4,14 @@
   "description": "A simple, type-safe CLI prompting library.",
   "exports": {
     ".": {
-      "types": "./dist/index.d.mts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.cjs"
+      "types": "./dist/prompts/index.d.mts",
+      "import": "./dist/prompts/index.mjs",
+      "require": "./dist/prompts/index.cjs"
     },
-    "./raw": {
-      "types": "./dist/raw.d.mts",
-      "import": "./dist/raw.mjs",
-      "require": "./dist/raw.cjs"
+    "./core": {
+      "types": "./dist/core/index.d.mts",
+      "import": "./dist/core/index.mjs",
+      "require": "./dist/core/index.cjs"
     }
   },
   "scripts": {
@@ -24,8 +24,9 @@
     "prompt"
   ],
   "dependencies": {
+    "@convoker/input": "workspace:*",
     "@convoker/theme": "workspace:*",
-    "@convoker/input": "workspace:*"
+    "rxjs": "^7.8.2"
   },
   "files": [
     "src",
