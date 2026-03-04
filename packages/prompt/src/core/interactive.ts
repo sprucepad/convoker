@@ -35,13 +35,11 @@ export function createInteractivePrompt<T, O extends CoreOpts<T>, S>(config: {
 
     if (input.isTTY) {
       input.resume();
-      input.read?.();
       input.setRawMode(true);
     }
 
     let state = initialState(baseCtx.opts);
     let keyHandler: ((key: Keypress) => void) | null = null;
-    let renderedLines = 0;
 
     const cleanupInteractive = () => {
       input.removeAllListeners("keypress");
@@ -65,49 +63,15 @@ export function createInteractivePrompt<T, O extends CoreOpts<T>, S>(config: {
       originalAbort();
     };
 
-    const clearBlock = () => {
-      if (!renderedLines) return;
-
-      // Move to top of previous render
-      output.write(`\x1B[${renderedLines}F`);
-      // F = move cursor up N lines AND to column 0
-
-      for (let i = 0; i < renderedLines; i++) {
-        output.write("\x1B[2K"); // clear entire line
-        if (i < renderedLines - 1) {
-          output.write("\x1B[1E");
-          // E = move to next line, column 0
-        }
-      }
-
-      // Move back to top again
-      output.write(`\x1B[${renderedLines - 1}F`);
-    };
-
     const render = () => {
-      clearBlock();
+      // Restore to saved position
+      output.write("\x1B[u");
+
+      // Clear everything below
+      output.write("\x1B[J");
 
       ctx.state = state;
-
-      let buffer = "";
-      const originalWrite = output.write.bind(output);
-
-      output.write = ((chunk: any) => {
-        buffer += chunk;
-        return true;
-      }) as any;
-
       renderView(ctx);
-
-      output.write = originalWrite;
-
-      const lines = buffer.endsWith("\n")
-        ? buffer.slice(0, -1).split("\n")
-        : buffer.split("\n");
-
-      renderedLines = lines.length;
-
-      originalWrite(buffer);
     };
 
     const setState = (updater: (prev: S) => S) => {
@@ -131,6 +95,9 @@ export function createInteractivePrompt<T, O extends CoreOpts<T>, S>(config: {
     input.on("keypress", (_, key) => {
       keyHandler?.(key);
     });
+
+    // Save cursor position
+    output.write("\x1B[s");
 
     setup?.(ctx);
     render();

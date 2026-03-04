@@ -1,4 +1,4 @@
-import { createInteractivePrompt, PromptValidationError } from "@/core";
+import { createInteractivePrompt } from "@/core";
 import type { TextOpts } from "./text";
 
 /**

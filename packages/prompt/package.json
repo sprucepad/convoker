@@ -25,8 +25,7 @@
   ],
   "dependencies": {
     "@convoker/input": "workspace:*",
-    "@convoker/theme": "workspace:*",
-    "rxjs": "^7.8.2"
+    "@convoker/theme": "workspace:*"
   },
   "files": [
     "src",
