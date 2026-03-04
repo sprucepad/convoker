@@ -42,7 +42,8 @@
   "peerDependencies": {
     "@convoker/log": "workspace:*",
     "@convoker/prompt": "workspace:*",
-    "@convoker/theme": "workspace:*"
+    "@convoker/theme": "workspace:*",
+    "@convoker/input": "workspace:*"
   },
   "publishConfig": {
     "access": "public"

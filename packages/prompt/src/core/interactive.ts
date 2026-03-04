@@ -57,14 +57,6 @@ export function createInteractivePrompt<T, O extends CoreOpts<T>, S>(
       keyHandler = handler;
     };
 
-    const ctx: InteractiveContext<T, O, S> = {
-      ...baseCtx,
-      state,
-      setState,
-      render,
-      onKeypress,
-    };
-
     const cleanupInteractive = () => {
       input.removeAllListeners("keypress");
 
@@ -90,6 +82,14 @@ export function createInteractivePrompt<T, O extends CoreOpts<T>, S>(
     baseCtx.abort = () => {
       cleanupInteractive();
       originalAbort();
+    };
+
+    const ctx: InteractiveContext<T, O, S> = {
+      ...baseCtx,
+      state,
+      setState,
+      render,
+      onKeypress,
     };
 
     input.on("keypress", (_, key) => {

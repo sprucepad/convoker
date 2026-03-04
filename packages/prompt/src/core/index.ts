@@ -43,3 +43,4 @@ export interface CoreOpts<T> {
 export * from "./theme";
 export * from "./static";
 export * from "./interactive";
+export * from "./error";

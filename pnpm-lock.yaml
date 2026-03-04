@@ -60,6 +60,9 @@ importers:
       '@convoker/core':
         specifier: workspace:*
         version: link:../core
+      '@convoker/input':
+        specifier: workspace:*
+        version: link:../input
       '@convoker/log':
         specifier: workspace:*
         version: link:../log
