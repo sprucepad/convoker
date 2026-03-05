@@ -1,0 +1,12 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./apps/examples" },
+    { "path": "./packages/convoker" },
+    { "path": "./packages/core" },
+    { "path": "./packages/input" },
+    { "path": "./packages/log" },
+    { "path": "./packages/prompt" },
+    { "path": "./packages/theme" }
+  ]
+}

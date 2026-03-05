@@ -32,12 +32,13 @@ export const promptExample = new Command("prompt")
     console.log(selectResult);
 
     // The multi-select prompt allows users to pick multiple options.
-    const multiselect = await prompt.multiselect({
+    const multiselect = await prompt.select({
       message: "Select multiple things!",
       options: [
         { label: "Option One", value: "one" },
         { label: "Option Two", value: "two" },
       ],
+      multiple: true,
     });
 
     console.log(multiselect);
@@ -52,6 +53,18 @@ export const promptExample = new Command("prompt")
     });
 
     console.log(searchResult);
+
+    // The multi-search prompt allows the user to pick multiple results.
+    const multisearchResult = await prompt.search({
+      message: "Search for something!",
+      options: [
+        { label: "Option One", value: "one" },
+        { label: "Option Two", value: "two" },
+      ],
+      multiple: true,
+    });
+
+    console.log(multisearchResult);
 
     // A yes/no prompt.
     const confirmResult = await prompt.confirm({

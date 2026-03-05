@@ -1,6 +1,6 @@
 {
   "name": "@convoker/input",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Convoker's input module.",
   "exports": {
     ".": {
@@ -17,6 +17,10 @@
   "keywords": [
     "convoker",
     "input"
+  ],
+  "files": [
+    "src",
+    "dist"
   ],
   "publishConfig": {
     "access": "public"
