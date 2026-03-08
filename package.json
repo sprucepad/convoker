@@ -23,7 +23,7 @@
     "prettier": "^3.8.1",
     "prettier-plugin-astro": "^0.14.1",
     "tsdown": "^0.20.3",
-    "turbo": "^2.8.13",
+    "turbo": "^2.8.14",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.56.1",
     "valibot": "^1.2.0",

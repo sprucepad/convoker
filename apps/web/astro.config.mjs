@@ -9,6 +9,8 @@ export default defineConfig({
     starlight({
       title: "Convoker",
       favicon: "/favicon.png",
+      customCss: ["./src/assets/styles.css"],
+
       social: [
         {
           icon: "github",
