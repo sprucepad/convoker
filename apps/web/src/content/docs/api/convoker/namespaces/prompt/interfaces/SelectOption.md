@@ -5,7 +5,7 @@ prev: false
 title: "SelectOption"
 ---
 
-Defined in: packages/prompt/dist/prompts/index.d.mts:53
+Defined in: packages/prompt/dist/index.d.mts:53
 
 An option for select input.
 
@@ -21,7 +21,7 @@ An option for select input.
 
 > `optional` **disabled**: `boolean`
 
-Defined in: packages/prompt/dist/prompts/index.d.mts:69
+Defined in: packages/prompt/dist/index.d.mts:69
 
 If this option is disabled.
 
@@ -31,7 +31,7 @@ If this option is disabled.
 
 > `optional` **hint**: `string`
 
-Defined in: packages/prompt/dist/prompts/index.d.mts:65
+Defined in: packages/prompt/dist/index.d.mts:65
 
 A description of the option.
 
@@ -41,7 +41,7 @@ A description of the option.
 
 > **label**: `string`
 
-Defined in: packages/prompt/dist/prompts/index.d.mts:57
+Defined in: packages/prompt/dist/index.d.mts:57
 
 The label (what gets displayed) of the select option.
 
@@ -51,6 +51,6 @@ The label (what gets displayed) of the select option.
 
 > **value**: `T`
 
-Defined in: packages/prompt/dist/prompts/index.d.mts:61
+Defined in: packages/prompt/dist/index.d.mts:61
 
 The value (what gets returned) of the select option.

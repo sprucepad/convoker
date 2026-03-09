@@ -61,3 +61,84 @@ import { Tabs, TabItem } from "@astrojs/starlight/components";
 </Tabs>
 
 ## Usage
+
+The available built-in prompts are the following. To create your own prompt, use our [Create your own prompt](/guides/prompt) guide.
+
+All prompts take in an object, containing a message, some optional shared configuration and prompt-specific options.
+
+- ```ts
+  await confirm({
+    message: string,
+    yesLabel?: string,
+    noLabel?: string,
+  });
+  ```
+
+  A simple yes/no question.
+
+- ```ts
+  await text({
+    message: string,
+    placeholder?: string,
+    minLength?: number,
+    maxLength?: number,
+  });
+  ```
+
+  A simple text input.
+
+- ```ts
+  await password({
+    message: string,
+    placeholder?: string,
+    minLength?: number,
+    maxLength?: number,
+
+    mask?: string,
+    confirm?: boolean,
+  });
+  ```
+
+  A simple password (masked) input.
+
+- ```ts
+  await select({
+    message: string,
+    options: {
+      label: string,
+      value: any,
+      hint?: string,
+      disabled?: boolean,
+    }[];
+    multiple?: boolean,
+    initialIndex?: number,
+  })
+  ```
+
+  A select input, allowing the user to pick one or more (configurable) options from a list.
+
+- ```ts
+  await search({
+    message: string,
+    options: {
+      label: string,
+      value: any,
+      hint?: string,
+      disabled?: boolean,
+    }[];
+    multiple?: boolean,
+    initialIndex?: number,
+  })
+  ```
+
+  A search option, allowing the user to pick one or more (configurable) options from a searchable list.
+
+- ```ts
+  await editor({
+    message: string,
+    required?: boolean,
+    inline?: boolean,
+  })
+  ```
+
+  Opens the user's default text input, or, uses the terminal as input.

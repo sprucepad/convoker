@@ -5,7 +5,7 @@ prev: false
 title: "TextOpts"
 ---
 
-Defined in: packages/prompt/dist/prompts/index.d.mts:7
+Defined in: packages/prompt/dist/index.d.mts:7
 
 Options for text input.
 
@@ -65,7 +65,7 @@ The standard input. Defaults to `process.stdin`.
 
 > `optional` **maxLength**: `number`
 
-Defined in: packages/prompt/dist/prompts/index.d.mts:19
+Defined in: packages/prompt/dist/index.d.mts:19
 
 Maximum length of the input.
 
@@ -89,7 +89,7 @@ The message of the prompt.
 
 > `optional` **minLength**: `number`
 
-Defined in: packages/prompt/dist/prompts/index.d.mts:15
+Defined in: packages/prompt/dist/index.d.mts:15
 
 Minimum length of the input.
 
@@ -113,7 +113,7 @@ The standard output. Defaults to `process.stdout`.
 
 > `optional` **placeholder**: `string`
 
-Defined in: packages/prompt/dist/prompts/index.d.mts:11
+Defined in: packages/prompt/dist/index.d.mts:11
 
 A placeholder, displayed when the user hasn't typed anything yet.
 

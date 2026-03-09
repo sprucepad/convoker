@@ -7,7 +7,7 @@ title: "select"
 
 > **select**\<`T`, `M`\>(`opts`): `Promise`\<`M` *extends* `true` ? `T`[] : `T`\>
 
-Defined in: packages/prompt/dist/prompts/index.d.mts:88
+Defined in: packages/prompt/dist/index.d.mts:88
 
 ## Type Parameters
 

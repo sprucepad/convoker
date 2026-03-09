@@ -5,7 +5,7 @@ prev: false
 title: "EditorOpts"
 ---
 
-Defined in: packages/prompt/dist/prompts/index.d.mts:143
+Defined in: packages/prompt/dist/index.d.mts:143
 
 Options for opening the system editor.
 
@@ -47,7 +47,7 @@ The default value.
 
 > `optional` **inline**: `boolean`
 
-Defined in: packages/prompt/dist/prompts/index.d.mts:148
+Defined in: packages/prompt/dist/index.d.mts:148
 
 ***
 
@@ -97,7 +97,7 @@ The standard output. Defaults to `process.stdout`.
 
 > `optional` **required**: `boolean`
 
-Defined in: packages/prompt/dist/prompts/index.d.mts:147
+Defined in: packages/prompt/dist/index.d.mts:147
 
 If the input is required for continuing or not.
 

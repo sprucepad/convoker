@@ -11,8 +11,14 @@ export default defineConfig({
       title: "Convoker",
       plugins: [
         starlightTypeDoc({
-          entryPoints: ["../../packages/convoker/src/index.ts"],
-          tsconfig: "../../packages/convoker/tsconfig.json",
+          entryPoints: ["../../packages/*"],
+          tsconfig: "../../packages/core/tsconfig.json",
+          typeDoc: {
+            entryPointStrategy: "packages",
+            packageOptions: {
+              entryPoints: ["src/index.ts"],
+            },
+          },
         }),
       ],
       favicon: "/favicon.png",

@@ -7,7 +7,7 @@ title: "confirm"
 
 > `const` **confirm**: (`opts`) => `Promise`\<`boolean`\>
 
-Defined in: packages/prompt/dist/prompts/index.d.mts:137
+Defined in: packages/prompt/dist/index.d.mts:137
 
 Prompts the user to confirm an action.
 

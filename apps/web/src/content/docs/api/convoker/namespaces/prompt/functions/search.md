@@ -7,7 +7,7 @@ title: "search"
 
 > **search**\<`T`, `M`\>(`opts`): `Promise`\<`M` *extends* `true` ? `T`[] : `T`\>
 
-Defined in: packages/prompt/dist/prompts/index.d.mts:116
+Defined in: packages/prompt/dist/index.d.mts:116
 
 Prompts the user to search through a list of options.
 

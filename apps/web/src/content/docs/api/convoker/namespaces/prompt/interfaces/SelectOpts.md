@@ -5,7 +5,7 @@ prev: false
 title: "SelectOpts"
 ---
 
-Defined in: packages/prompt/dist/prompts/index.d.mts:74
+Defined in: packages/prompt/dist/index.d.mts:74
 
 Options for select input.
 
@@ -61,7 +61,7 @@ The default value.
 
 > `optional` **initialIndex**: `number`
 
-Defined in: packages/prompt/dist/prompts/index.d.mts:86
+Defined in: packages/prompt/dist/index.d.mts:86
 
 The initial option selected.
 
@@ -99,7 +99,7 @@ The message of the prompt.
 
 > `optional` **multiple**: `M`
 
-Defined in: packages/prompt/dist/prompts/index.d.mts:82
+Defined in: packages/prompt/dist/index.d.mts:82
 
 If the user can select multiple options.
 
@@ -109,7 +109,7 @@ If the user can select multiple options.
 
 > **options**: [`SelectOption`](/api/convoker/namespaces/prompt/interfaces/selectoption/)\<`T`\>[]
 
-Defined in: packages/prompt/dist/prompts/index.d.mts:78
+Defined in: packages/prompt/dist/index.d.mts:78
 
 Every option the user can pick from.
 

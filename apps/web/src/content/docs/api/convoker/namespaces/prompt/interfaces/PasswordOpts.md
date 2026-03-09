@@ -5,7 +5,7 @@ prev: false
 title: "PasswordOpts"
 ---
 
-Defined in: packages/prompt/dist/prompts/index.d.mts:32
+Defined in: packages/prompt/dist/index.d.mts:32
 
 Options for password input.
 
@@ -33,7 +33,7 @@ If the screen should be cleared when finishing a prompt.
 
 > `optional` **confirm**: `boolean`
 
-Defined in: packages/prompt/dist/prompts/index.d.mts:40
+Defined in: packages/prompt/dist/index.d.mts:40
 
 If the user should be asked to confirm the password, by typing it again.
 
@@ -71,7 +71,7 @@ The standard input. Defaults to `process.stdin`.
 
 > `optional` **mask**: `string`
 
-Defined in: packages/prompt/dist/prompts/index.d.mts:36
+Defined in: packages/prompt/dist/index.d.mts:36
 
 The mask for the password input.
 
@@ -81,7 +81,7 @@ The mask for the password input.
 
 > `optional` **maxLength**: `number`
 
-Defined in: packages/prompt/dist/prompts/index.d.mts:19
+Defined in: packages/prompt/dist/index.d.mts:19
 
 Maximum length of the input.
 
@@ -109,7 +109,7 @@ The message of the prompt.
 
 > `optional` **minLength**: `number`
 
-Defined in: packages/prompt/dist/prompts/index.d.mts:15
+Defined in: packages/prompt/dist/index.d.mts:15
 
 Minimum length of the input.
 
@@ -137,7 +137,7 @@ The standard output. Defaults to `process.stdout`.
 
 > `optional` **placeholder**: `string`
 
-Defined in: packages/prompt/dist/prompts/index.d.mts:11
+Defined in: packages/prompt/dist/index.d.mts:11
 
 A placeholder, displayed when the user hasn't typed anything yet.
 

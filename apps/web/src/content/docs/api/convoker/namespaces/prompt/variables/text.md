@@ -7,7 +7,7 @@ title: "text"
 
 > `const` **text**: (`opts`) => `Promise`\<`string`\>
 
-Defined in: packages/prompt/dist/prompts/index.d.mts:26
+Defined in: packages/prompt/dist/index.d.mts:26
 
 Prompts the user for text input.
 

@@ -7,7 +7,7 @@ title: "password"
 
 > `const` **password**: (`opts`) => `Promise`\<`string`\>
 
-Defined in: packages/prompt/dist/prompts/index.d.mts:47
+Defined in: packages/prompt/dist/index.d.mts:47
 
 Prompts the user for a password.
 

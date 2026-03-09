@@ -7,7 +7,7 @@ title: "editor"
 
 > `const` **editor**: (`opts`) => `Promise`\<`string`\>
 
-Defined in: packages/prompt/dist/prompts/index.d.mts:155
+Defined in: packages/prompt/dist/index.d.mts:155
 
 Opens the system editor.
 

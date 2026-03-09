@@ -5,7 +5,7 @@ prev: false
 title: "SearchOpts"
 ---
 
-Defined in: packages/prompt/dist/prompts/index.d.mts:94
+Defined in: packages/prompt/dist/index.d.mts:94
 
 Options for search input.
 
@@ -61,7 +61,7 @@ The default value.
 
 > `optional` **initialIndex**: `number`
 
-Defined in: packages/prompt/dist/prompts/index.d.mts:86
+Defined in: packages/prompt/dist/index.d.mts:86
 
 The initial option selected.
 
@@ -103,7 +103,7 @@ The message of the prompt.
 
 > `optional` **minQueryLength**: `number`
 
-Defined in: packages/prompt/dist/prompts/index.d.mts:102
+Defined in: packages/prompt/dist/index.d.mts:102
 
 Minimum length for a query string.
 
@@ -113,7 +113,7 @@ Minimum length for a query string.
 
 > `optional` **multiple**: `M`
 
-Defined in: packages/prompt/dist/prompts/index.d.mts:82
+Defined in: packages/prompt/dist/index.d.mts:82
 
 If the user can select multiple options.
 
@@ -127,7 +127,7 @@ If the user can select multiple options.
 
 > **options**: [`SelectOption`](/api/convoker/namespaces/prompt/interfaces/selectoption/)\<`T`\>[]
 
-Defined in: packages/prompt/dist/prompts/index.d.mts:78
+Defined in: packages/prompt/dist/index.d.mts:78
 
 Every option the user can pick from.
 
@@ -155,7 +155,7 @@ The standard output. Defaults to `process.stdout`.
 
 > `optional` **placeholder**: `string`
 
-Defined in: packages/prompt/dist/prompts/index.d.mts:98
+Defined in: packages/prompt/dist/index.d.mts:98
 
 Placeholder for the search input.
 
@@ -207,7 +207,7 @@ A validator function, or a Standard Schema validator.
 
 > `optional` **filter**(`query`, `option`): `boolean`
 
-Defined in: packages/prompt/dist/prompts/index.d.mts:109
+Defined in: packages/prompt/dist/index.d.mts:109
 
 Filters a single option.
 
@@ -235,7 +235,7 @@ The option to filter.
 
 > `optional` **transformQuery**(`query`): `Q`
 
-Defined in: packages/prompt/dist/prompts/index.d.mts:103
+Defined in: packages/prompt/dist/index.d.mts:103
 
 #### Parameters
 

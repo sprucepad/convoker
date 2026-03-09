@@ -5,7 +5,7 @@ prev: false
 title: "ConfirmOpts"
 ---
 
-Defined in: packages/prompt/dist/prompts/index.d.mts:122
+Defined in: packages/prompt/dist/index.d.mts:122
 
 Options for confirm input.
 
@@ -75,7 +75,7 @@ The message of the prompt.
 
 > `optional` **noLabel**: `string`
 
-Defined in: packages/prompt/dist/prompts/index.d.mts:130
+Defined in: packages/prompt/dist/index.d.mts:130
 
 What gets displayed for the No option.
 
@@ -141,6 +141,6 @@ A validator function, or a Standard Schema validator.
 
 > `optional` **yesLabel**: `string`
 
-Defined in: packages/prompt/dist/prompts/index.d.mts:126
+Defined in: packages/prompt/dist/index.d.mts:126
 
 What gets displayed for the Yes option.
