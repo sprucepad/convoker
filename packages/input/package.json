@@ -1,5 +1,6 @@
 {
   "name": "@convoker/input",
+  "type": "module",
   "version": "0.1.1",
   "description": "Convoker's input module.",
   "exports": {

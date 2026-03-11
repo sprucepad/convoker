@@ -82,8 +82,8 @@ async function main() {
     // If `--version` was passed into the program.
     isVersion,
   } = await program.parse(["greet", "John"]);
-  // `.parse()` does require that you pass the arguments manually.
 
+  console.log({ command, errors, input, isHelp, isVersion });
   console.log("exited");
 }
 

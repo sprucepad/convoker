@@ -1,5 +1,6 @@
 {
   "name": "@convoker/log",
+  "type": "module",
   "version": "0.1.1",
   "description": "A simple logging library.",
   "exports": {

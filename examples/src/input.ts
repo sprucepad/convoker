@@ -14,7 +14,7 @@ export const inputExample = new Command("input")
   })
   // This input is accessible as the first argument of either middlewares or actions,
   // and is fully type-safe.
-  .use(({ x, y }, next) => next())
+  .use((input, next) => next())
   .action(({ x, y }) => {
     console.log(`x: ${x}, y: ${y}`);
   });

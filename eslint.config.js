@@ -17,5 +17,5 @@ export default defineConfig([
       "no-control-regex": "off",
     },
   },
-  globalIgnores(["dist"]),
+  globalIgnores(["**/dist/**/*", "**/.astro/**/*"]),
 ]);
