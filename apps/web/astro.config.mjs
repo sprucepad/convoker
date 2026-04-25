@@ -12,7 +12,7 @@ export default defineConfig({
       title: "Convoker",
       plugins: [
         starlightTypeDoc({
-          entryPoints: ["../../packages/*"],
+          entryPoints: ["../../packages/!(configs)"],
           // @ts-expect-error -- this should be optional for entryPointStrategy "packages" as it loads each individual package's tsconfig
           tsconfig: undefined,
           typeDoc: {

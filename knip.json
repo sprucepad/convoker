@@ -1,6 +1,7 @@
 {
   "$schema": "https://unpkg.com/knip@v6/schema.json",
   "tags": ["-lintignore"],
+  "ignore": ["**/.astro", "**/dist"],
   "workspaces": {
     "./packages/*": {
       "entry": ["tests/**/*.ts", "**/*.config.{ts,js,mts,mjs}"]
