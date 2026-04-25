@@ -1,6 +1,7 @@
 {
   "extends": "@dev/configs/typescript/base",
   "compilerOptions": {
+    "lib": ["ES2022", "DOM"],
     "rootDirs": ["src", "tests"],
     "paths": {
       "@/*": ["./src/*"],

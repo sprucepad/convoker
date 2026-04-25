@@ -1,6 +1,6 @@
 // @ts-check
 import { defineConfig } from "eslint/config";
-import base from "./base";
+import base from "./base.js";
 
 export default defineConfig([
   base,

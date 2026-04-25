@@ -1,6 +1,6 @@
 // @ts-check
 import { defineConfig, globalIgnores } from "eslint/config";
-import base from "./base";
+import base from "./base.js";
 
 import pluginAstro from "eslint-plugin-astro";
 
