@@ -5,6 +5,7 @@
   "packageManager": "pnpm@10.33.0",
   "scripts": {
     "test": "vitest",
+    "knip": "knip",
     "build:pkg": "turbo run prepare",
     "build:app": "turbo run build",
     "build:all": "turbo run prepare build",
@@ -17,6 +18,7 @@
     "format:write": "prettier --write ."
   },
   "devDependencies": {
+    "knip": "^6.7.0",
     "prettier": "^3.8.3",
     "prettier-plugin-astro": "^0.14.1",
     "turbo": "^2.9.6",

@@ -1,7 +1,7 @@
 import type { PromptContext } from "@/core";
 import { PromptValidationError } from "@/core/error";
 
-export interface TextlikeOptions {
+interface TextlikeOptions {
   message: string;
   placeholder?: string;
   default?: string;
@@ -70,7 +70,7 @@ export function handleTextlikeInput(
   });
 }
 
-export interface TextlikeRenderOptions {
+interface TextlikeRenderOptions {
   message: string;
   placeholder?: string;
   default?: string;

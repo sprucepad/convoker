@@ -1,0 +1,31 @@
+{
+  "$schema": "https://unpkg.com/knip@v6/schema.json",
+  "tags": ["-lintignore"],
+  "workspaces": {
+    "./packages/*": {
+      "entry": ["tests/**/*.ts", "**/*.config.{ts,js,mts,mjs}"]
+    },
+    "./packages/core": {
+      "entry": [
+        "src/parsers/*.ts",
+        "tests/**/*.ts",
+        "**/*.config.{ts,js,mts,mjs}"
+      ]
+    },
+    "./packages/configs": {
+      "ignoreDependencies": [
+        "@typescript-eslint/parser",
+        "eslint-plugin-jsx-a11y"
+      ]
+    },
+    "./apps/web": {
+      "entry": [
+        "src/pages/*.{astro,ts}",
+        "**/*.config.{ts,js,mts,mjs}",
+        "src/content/**/*.{md,mdx}"
+      ],
+      "astro": true,
+      "mdx": true
+    }
+  }
+}

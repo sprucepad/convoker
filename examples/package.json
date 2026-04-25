@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "Examples for using Convoker",
   "type": "module",
-  "main": "index.js",
   "private": true,
   "scripts": {
     "start": "tsx src/index.ts"
