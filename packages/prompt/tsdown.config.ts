@@ -6,5 +6,8 @@ export default defineConfig({
   dts: {
     sourcemap: true,
   },
+  outputOptions: {
+    sourcemapExcludeSources: true,
+  },
   sourcemap: true,
 });
