@@ -1,10 +1,11 @@
 name: Publish to npm
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
+  release:
+    types:
+      - created
+      - published
+  workflow_dispatch:
 
 jobs:
   publish:
