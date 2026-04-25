@@ -11,9 +11,10 @@
     }
   },
   "scripts": {
-    "test": "vitest",
     "prepare": "tsdown",
-    "check": "tsc"
+    "check": "tsc",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix"
   },
   "keywords": [
     "convoker",

@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
   pull_request:
 
 jobs:
@@ -28,7 +28,7 @@ jobs:
         run: pnpm check
 
       - name: Format check
-        run: pnpm format
+        run: pnpm format:check
 
       - name: Lint
         run: pnpm lint
