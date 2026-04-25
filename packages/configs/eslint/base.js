@@ -1,7 +1,8 @@
+// @ts-check
+import { defineConfig, globalIgnores } from "eslint/config";
 import js from "@eslint/js";
 import globals from "globals";
 import tseslint from "typescript-eslint";
-import { defineConfig, globalIgnores } from "eslint/config";
 
 export default defineConfig([
   {
@@ -11,11 +12,5 @@ export default defineConfig([
     languageOptions: { globals: globals.browser },
   },
   tseslint.configs.recommended,
-  {
-    rules: {
-      "@typescript-eslint/no-explicit-any": "off",
-      "no-control-regex": "off",
-    },
-  },
-  globalIgnores(["**/dist/**/*", "**/.astro/**/*"]),
+  globalIgnores(["**/dist/**/*"]),
 ]);

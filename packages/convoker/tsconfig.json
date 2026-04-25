@@ -1,7 +1,11 @@
 {
-  "extends": "../../tsconfig.base.json",
+  "extends": "@dev/configs/typescript/base",
   "compilerOptions": {
-    "baseUrl": "."
+    "rootDirs": ["src", "tests"],
+    "paths": {
+      "@/*": ["./src/*"],
+      "@tests/*": ["./tests/*"]
+    }
   },
   "exclude": ["dist"]
 }
