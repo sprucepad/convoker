@@ -9,6 +9,7 @@ import {
   MissingRequiredOptionError,
   TooManyArgumentsError,
   UnknownOptionError,
+  VersionAskedError,
 } from "./error";
 import {
   convert,
@@ -53,14 +54,6 @@ export interface ValidatedParseResult<T extends Input> {
    * Errors collected during parsing.
    */
   errors: ConvokerError[];
-  /**
-   * If this should result in displaying the version of the command.
-   */
-  isVersion: boolean;
-  /**
-   * If this should result in displaying a help screen.
-   */
-  isHelp: boolean;
 }
 
 /**
@@ -73,10 +66,12 @@ export type ActionFn<T extends Input> = (
 /**
  * Command middleware function.
  */
-export type MiddlewareFn<T extends Input = Input> = (
+export type MiddlewareFn<T extends Input = Input> = ((
   input: InferInput<T>,
   next: () => Promise<any>,
-) => any | Promise<any>;
+) => any | Promise<any>) & {
+  extend(c: Command<any>): void;
+};
 
 /**
  * Command error handler.
@@ -330,46 +325,31 @@ export class Command<T extends Input = Input> {
   async parse(argv = process.argv.slice(2)): Promise<ValidatedParseResult<T>> {
     const map = this.buildInputMap();
 
-    // eslint-disable-next-line -- alias of this is necessary to traverse through the tree
+    const parseResult = await this.$parser.parse(argv, map);
+    // eslint-disable-next-line -- alias to this is required to go through the tree
     let command: Command<any> = this;
     const middlewares: MiddlewareFn[] = [...command.$middlewares];
-    let args = argv;
-    while (args.length > 0 && command.$children.has(args[0]!)) {
-      if (!this.$parser.capabilities.subCommands)
-        throw new Error(
-          "Subcommands aren't allowed in the parser you're using.",
-        );
-      command = command.$children.get(args[0]!)!.command;
-      middlewares.push(...command.$middlewares);
-      args = args.slice(1);
-    }
 
-    if (command.$theme) setTheme(command.$theme);
-    const parseResult = await command.$parser.parse(args, map);
+    if (this.$parser.capabilities.subCommands) {
+      while (
+        parseResult.positional.length > 0 &&
+        command.$children.has(parseResult.positional[0]!)
+      ) {
+        const next = command.$children.get(parseResult.positional[0]!)!.command;
 
-    // Parse remaining (to handle `command --flag sub sub2`)
-    while (
-      parseResult.positional.length > 0 &&
-      command.$children.has(parseResult.positional[0]!)
-    ) {
-      command = command.$children.get(parseResult.positional[0]!)!.command;
-      middlewares.push(...command.$middlewares);
-      parseResult.positional = parseResult.positional.slice(1);
+        command = next;
+        middlewares.push(...command.$middlewares);
+
+        parseResult.positional = parseResult.positional.slice(1);
+      }
     }
 
     const input: Record<string, unknown> = {};
     const errors: ConvokerError[] = [];
-    let isHelp = false;
-    let isVersion = false;
+    if (command.$theme) setTheme(command.$theme);
 
     // Set option input values
     for (const [flag, flagValue] of parseResult.flags) {
-      if (flag === "h" || flag === "help") {
-        isHelp = true;
-      } else if (flag === "V" || flag === "version") {
-        isVersion = true;
-      }
-
       if (!map.has(flag)) {
         if (!command.$allowUnknownOptions)
           errors.push(new UnknownOptionError(command, flag));
@@ -425,8 +405,6 @@ export class Command<T extends Input = Input> {
       middlewares,
       errors,
       input: input as InferInput<T>,
-      isHelp,
-      isVersion,
     };
   }
 
@@ -487,7 +465,10 @@ export class Command<T extends Input = Input> {
 
     for (const error of errors) {
       if (error instanceof ConvokerError) {
-        if (!(error instanceof HelpAskedError)) error.print();
+        if (error instanceof VersionAskedError) {
+          console.log(`${this.fullCommandPath()} version ${this.$version}`);
+          return;
+        } else if (!(error instanceof HelpAskedError)) error.print();
         printHelpScreen = true;
       } else {
         nonCliErrors.push(error);
@@ -495,8 +476,8 @@ export class Command<T extends Input = Input> {
     }
 
     if (nonCliErrors.length) throw nonCliErrors[0];
-
     if (!printHelpScreen) return;
+
     const pad = (s: string, len: number) => s.padEnd(len, " ");
 
     console.log(
@@ -607,15 +588,6 @@ export class Command<T extends Input = Input> {
    */
   async run(argv = process.argv.slice(2)): Promise<this> {
     const result = await this.parse(argv);
-    if (result.isHelp) {
-      result.command.handleErrors([new HelpAskedError(result.command)]);
-      return this;
-    } else if (result.isVersion) {
-      console.log(
-        `${result.command.fullCommandPath()} version ${result.command.$version}`,
-      );
-      return this;
-    }
 
     try {
       if (result.errors.length > 0) {

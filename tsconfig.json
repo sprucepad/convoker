@@ -1,7 +1,8 @@
 {
   "files": [],
   "references": [
-    { "path": "./apps/examples" },
+    { "path": "./examples" },
+    { "path": "./apps/web" },
     { "path": "./packages/convoker" },
     { "path": "./packages/core" },
     { "path": "./packages/input" },
