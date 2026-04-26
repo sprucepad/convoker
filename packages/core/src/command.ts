@@ -66,12 +66,10 @@ export type ActionFn<T extends Input> = (
 /**
  * Command middleware function.
  */
-export type MiddlewareFn<T extends Input = Input> = ((
+export type MiddlewareFn<T extends Input = Input> = (
   input: InferInput<T>,
   next: () => Promise<any>,
-) => any | Promise<any>) & {
-  extend(c: Command<any>): void;
-};
+) => any | Promise<any>;
 
 /**
  * Command error handler.
@@ -589,24 +587,25 @@ export class Command<T extends Input = Input> {
   async run(argv = process.argv.slice(2)): Promise<this> {
     const result = await this.parse(argv);
 
+    if (result.errors.length > 0) {
+      await result.command.handleErrors(result.errors, result.input);
+      return this;
+    }
+
     try {
-      if (result.errors.length > 0) {
-        await result.command.handleErrors(result.errors, result.input);
-      } else if (!result.command.$fn) {
-        await result.command.handleErrors(
-          [new HelpAskedError(result.command), ...result.errors],
-          result.input,
-        );
-      } else {
-        if (result.middlewares.length > 0) {
-          const runner = compose(result.middlewares);
-          // finalNext calls the command action with the same input
-          await runner(result.input, async () => {
-            await result.command.$fn?.(result.input);
-          });
-        } else {
+      if (result.middlewares.length > 0) {
+        const runner = compose(result.middlewares);
+        await runner(result.input, async () => {
+          if (!result.command.$fn) {
+            throw new HelpAskedError(result.command);
+          }
           await result.command.$fn(result.input);
+        });
+      } else {
+        if (!result.command.$fn) {
+          throw new HelpAskedError(result.command);
         }
+        await result.command.$fn(result.input);
       }
     } catch (e) {
       if (!(e instanceof Error)) {

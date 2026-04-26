@@ -1,4 +1,4 @@
-import { Command } from "convoker";
+import { Command, middleware } from "convoker";
 
 // Welcome to Convoker! This directory contains a few examples you can use
 // to build your own CLI application.
@@ -13,6 +13,8 @@ const program = new Command("examples")
   // Convoker is middleware-based. Usually, the root middleware is for warning the user or setting up other aspects. It's the first thing that runs after parsing arguments.
   // The first argument is the input (see input.ts in this directory), and the second is the next in the chain. The `next` functions is asynchronous and returns a promise, so you must either also return it or await it.
   .use((_, next) => next());
+// Certain middleware need access to the command that runs them. Therefore, they need to be defined after command creation.
+program.use(middleware.versionFlag(program)).use(middleware.helpFlag(program));
 
 // There are three main ways to define subcommands in Convoker.
 
@@ -77,13 +79,9 @@ async function main() {
     errors,
     // Parsed input. Programs define inputs as shown above, and this includes that input.
     input,
-    // If `--help` was passed into the program.
-    isHelp,
-    // If `--version` was passed into the program.
-    isVersion,
   } = await program.parse(["greet", "John"]);
 
-  console.log({ command, errors, input, isHelp, isVersion });
+  console.log({ command, errors, input });
   console.log("exited");
 }
 

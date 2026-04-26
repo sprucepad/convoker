@@ -9,19 +9,15 @@ type VersionInput = {
 export function versionFlag(
   command: Command<any>,
   flagNames?: string[],
-): MiddlewareFn<VersionInput> {
-  const fn: MiddlewareFn<VersionInput> = ({ version }) => {
+): MiddlewareFn<any> {
+  const fn: MiddlewareFn<VersionInput> = ({ version }, next) => {
     if (version) throw new VersionAskedError(command);
+    return next();
   };
 
-  fn.extend = (c) => {
-    c.$input = {
-      version: new Option(
-        "boolean",
-        flagNames ?? ["--version", "-V"],
-      ).optional(),
-      ...c.$input,
-    };
+  command.$input = {
+    version: new Option("boolean", flagNames ?? ["version", "V"]).optional(),
+    ...command.$input,
   };
 
   return fn;
@@ -34,16 +30,15 @@ type HelpInput = {
 export function helpFlag(
   command: Command<any>,
   flagNames?: string[],
-): MiddlewareFn<HelpInput> {
-  const fn: MiddlewareFn<HelpInput> = ({ help }) => {
+): MiddlewareFn<any> {
+  const fn: MiddlewareFn<HelpInput> = ({ help }, next) => {
     if (help) throw new HelpAskedError(command);
+    return next();
   };
 
-  fn.extend = (c) => {
-    c.$input = {
-      version: new Option("boolean", flagNames ?? ["--help", "-h"]).optional(),
-      ...c.$input,
-    };
+  command.$input = {
+    help: new Option("boolean", flagNames ?? ["--help", "-h"]).optional(),
+    ...command.$input,
   };
 
   return fn;
