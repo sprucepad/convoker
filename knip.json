@@ -6,13 +6,6 @@
     "./packages/*": {
       "entry": ["tests/**/*.ts", "**/*.config.{ts,js,mts,mjs}"]
     },
-    "./packages/core": {
-      "entry": [
-        "src/parsers/*.ts",
-        "tests/**/*.ts",
-        "**/*.config.{ts,js,mts,mjs}"
-      ]
-    },
     "./packages/configs": {
       "ignoreDependencies": [
         "@typescript-eslint/parser",

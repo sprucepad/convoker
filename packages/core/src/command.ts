@@ -217,12 +217,27 @@ export class Command<T extends Input = Input> {
   }
 
   /**
+   * Sets a parser, and optionally adds middleware functions.
+   * @param parser The parser to set.
+   * @param fns The middleware functions.
+   * @returns this
+   */
+  use(parser: Parser, ...fns: MiddlewareFn<T>[]): this;
+  /**
    * Adds a chain of middlewares.
    * @param fns The middlewares to use.
    * @returns this
    */
-  use(...fns: MiddlewareFn<T>[]): this {
-    this.$middlewares.push(...fns);
+  use(...fns: MiddlewareFn<T>[]): this;
+
+  use(parserOrFn?: Parser | MiddlewareFn<T>, ...fns: MiddlewareFn<T>[]): this {
+    if (typeof parserOrFn === "object") {
+      this.$parser = parserOrFn;
+      this.$middlewares.push(...fns);
+    } else {
+      this.$middlewares.push(...(!parserOrFn ? fns : [parserOrFn, ...fns]));
+    }
+
     return this;
   }
 

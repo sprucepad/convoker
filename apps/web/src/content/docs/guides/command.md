@@ -7,7 +7,7 @@ sidebar:
 
 Command-line argument parsing is usually one of the first things that happen in the lifecycle of your program. It's the act of parsing a command like `demo --first --second=hello hello.txt world.py -xyz` into a format that's easier to consume in a program, like an object.
 
-The core of Convoker is a UNIX-like argument parser. This is currently not customizable, but we're working on it. It works through a `Command` class, with several metadata properties, which are used to auto-generate a help screen, and execution methods.
+The core of Convoker is several command-line argument parsers, by default a UNIX-like parser. It works through a `Command` class, with several metadata properties, which are used to auto-generate a help screen, and execution methods.
 
 ```js title="index.js"
 import { Command, i, log } from "convoker";
@@ -123,6 +123,61 @@ program.use((input, next) => {
 :::note
 You must return or await the result of `next` to avoid hanging promise errors, and you can't call `next` multiple times.
 :::
+
+## Parsers
+
+Convoker comes with 3 built-in parsers, in the `parsers` namespace in the core package. By default, a UNIX-like parser.
+
+```ts
+// # Unix parser
+parsers.unix(
+  parsers.gnu() || // GNU-style parsing, used in the UNIX parser as the default. Enables:
+    // - short flags & joining (`-abcdef`, being 6 different flags)
+    // - long flags with values (separated by spaces or `=`)
+
+    parsers.verbose() || // Verbose parsing. Enables:
+    // - non-joinable short flags (-a -b -c -d -e -f)
+    // - long flags with values (separated by `=` only)
+
+    parsers.bsd() || // BSD-style parsing. Enables:
+    // - non-joinable short flags with values (`-aExample`)
+
+    // Custom preset.
+    ({} as any),
+); // UNIX-like parsing. Comes with three different presets. Allows for:
+// - subcommands
+// - other capabilities, depending on the preset (see above)
+
+// # Windows parser
+parsers.windows(); // Windows-like parsing. Allows for:
+// - subcommands
+// - long & short flags, with values (separated by `:`)
+
+// # Key-value parser
+parsers.keyValue(); // Key/value pair parsing (`command key=value`)
+// - long flags only with values (separated by `=`)
+```
+
+To use a parser, you can use the `use` function in your root command.
+
+:::note
+Only the root command can customize the parser. Parsers in subcommands will be ignored.
+:::
+
+```ts
+program
+  .input({
+    names: i.option("string", "/names").list(),
+  })
+  .use(parsers.windows())
+  .action(({ names }) => {
+    for (const name of names) {
+      console.log(`Hello, ${name}!`);
+    }
+  });
+
+program.run(["/names:John,Amy"]);
+```
 
 ## Execution
 

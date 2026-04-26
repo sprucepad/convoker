@@ -104,7 +104,7 @@ export function gnu(): UnixPreset {
 export function verbose(): UnixPreset {
   return {
     valueSeparators: ["="],
-    joinShortFlags: true,
+    joinShortFlags: false,
     allowLongFlags: true,
   };
 }
