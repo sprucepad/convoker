@@ -41,6 +41,12 @@ export class HelpAskedError extends ConvokerError {
   }
 }
 
+export class VersionAskedError extends ConvokerError {
+  constructor(command: Command<any>) {
+    super("user asked for version!", command);
+  }
+}
+
 /**
  * When you pass too many arguments.
  */
