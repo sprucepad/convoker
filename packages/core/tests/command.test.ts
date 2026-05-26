@@ -73,6 +73,16 @@ describe("Command", () => {
     expect(input.file).toBe("main.ts");
   });
 
+  test("parse() parses positional list after options", async () => {
+    root.input({
+      x: i.option("number", "-x", "--x"),
+      y: i.option("number", "-y", "--y"),
+      names: i.positional("string").list(),
+    });
+    const { input } = await root.parse(["-x", "5", "-y", "5", "John", "Amy"]);
+    expect(input).toEqual({ x: 5, y: 5, names: ["John", "Amy"] });
+  });
+
   test("parse() fills defaults", async () => {
     root.input({
       port: i.option("number", "-p").default(3000),

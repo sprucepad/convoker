@@ -370,17 +370,15 @@ export class Command<T extends Input = Input> {
 
       const { inputKey, inputOption } = map.get(i)!;
       if (inputOption.$list) {
-        const values: string[] = [];
-        while (i++ < parseResult.positional.length) {
-          values.push(parseResult.positional[i]!);
-        }
+        const values = parseResult.positional.slice(i);
         input[inputKey] = await convert(inputOption.$kind, values);
-      } else {
-        input[inputKey] =
-          inputOption.$kind === "boolean"
-            ? true
-            : await convert(inputOption.$kind, parseResult.positional[i]!);
+        break;
       }
+
+      input[inputKey] =
+        inputOption.$kind === "boolean"
+          ? true
+          : await convert(inputOption.$kind, parseResult.positional[i]!);
     }
 
     // Apply defaults and enforce required

@@ -14,7 +14,7 @@ const program = new Command("examples")
   // The first argument is the input (see input.ts in this directory), and the second is the next in the chain. The `next` functions is asynchronous and returns a promise, so you must either also return it or await it.
   .use((_, next) => next());
 // Certain middleware need access to the command that runs them. Therefore, they need to be defined after command creation.
-program.use(middleware.versionFlag(program)).use(middleware.helpFlag(program));
+program.use(middleware.versionFlag(program), middleware.helpFlag(program));
 
 // There are three main ways to define subcommands in Convoker.
 
@@ -71,6 +71,7 @@ async function main() {
   await program.run();
   // You can also optionally pass arguments. By default, it is your runtime's `argv`.
 
+  /* eslint-disable */
   // If you don't need your program to run, you can also use `.parse(argv)`:
   const {
     // The command to run. This is important if you have subcommands, otherwise you can just use `program`.
@@ -80,8 +81,8 @@ async function main() {
     // Parsed input. Programs define inputs as shown above, and this includes that input.
     input,
   } = await program.parse(["greet", "John"]);
+  /* eslint-enable */
 
-  console.log({ command, errors, input });
   console.log("exited");
 }
 
