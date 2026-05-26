@@ -3,6 +3,10 @@
   "type": "module",
   "version": "0.3.2",
   "description": "A simple, type-safe CLI prompting library.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sprucepad/convoker"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.mts",

@@ -3,6 +3,10 @@
   "type": "module",
   "version": "0.1.4",
   "description": "Convoker's input module.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sprucepad/convoker"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.mts",
