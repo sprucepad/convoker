@@ -1,4 +1,5 @@
-import { validate, type StandardSchemaV1 } from "./standard-schema";
+import { validate } from "./standard-schema";
+import type { StandardSchemaV1 } from "@standard-schema/spec";
 
 /**
  * An input object.

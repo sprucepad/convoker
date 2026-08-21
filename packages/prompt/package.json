@@ -1,7 +1,7 @@
 {
   "name": "@convoker/prompt",
   "type": "module",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "description": "A simple, type-safe CLI prompting library.",
   "repository": {
     "type": "git",
@@ -9,12 +9,18 @@
   },
   "exports": {
     ".": {
-      "types": "./dist/index.d.mts",
+      "types": {
+        "import": "./dist/index.d.mts",
+        "require": "./dist/index.d.cts"
+      },
       "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
     },
     "./core": {
-      "types": "./dist/core/index.d.mts",
+      "types": {
+        "import": "./dist/core/index.d.mts",
+        "require": "./dist/core/index.d.cts"
+      },
       "import": "./dist/core/index.mjs",
       "require": "./dist/core/index.cjs"
     }
@@ -30,7 +36,10 @@
     "prompt"
   ],
   "dependencies": {
-    "@convoker/input": "workspace:^",
+    "@convoker/theme": "workspace:^",
+    "@standard-schema/spec": "^1.1.0"
+  },
+  "peerDependencies": {
     "@convoker/theme": "workspace:^"
   },
   "devDependencies": {
@@ -39,6 +48,11 @@
     "eslint": "^10.2.1",
     "tsdown": "^0.21.10",
     "typescript": "^6.0.3"
+  },
+  "peerDependenciesMeta": {
+    "@convoker/theme": {
+      "optional": true
+    }
   },
   "files": [
     "src",

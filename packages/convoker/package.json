@@ -1,7 +1,7 @@
 {
   "name": "convoker",
   "type": "module",
-  "version": "0.6.2",
+  "version": "0.7.0",
   "description": "A simple, type-safe CLI framework.",
   "repository": {
     "type": "git",
@@ -9,9 +9,60 @@
   },
   "exports": {
     ".": {
-      "types": "./dist/index.d.mts",
+      "types": {
+        "import": "./dist/index.d.mts",
+        "require": "./dist/index.d.cts"
+      },
       "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
+    },
+    "./log": {
+      "types": {
+        "import": "./dist/log.d.mts",
+        "require": "./dist/log.d.cts"
+      },
+      "import": "./dist/log.mjs",
+      "require": "./dist/log.cjs"
+    },
+    "./prompt": {
+      "types": {
+        "import": "./dist/prompt/index.d.mts",
+        "require": "./dist/prompt/index.d.cts"
+      },
+      "import": "./dist/prompt/index.mjs",
+      "require": "./dist/prompt/index.cjs"
+    },
+    "./prompt/core": {
+      "types": {
+        "import": "./dist/prompt/core.d.mts",
+        "require": "./dist/prompt/core.d.cts"
+      },
+      "import": "./dist/prompt/core.mjs",
+      "require": "./dist/prompt/core.cjs"
+    },
+    "./theme": {
+      "types": {
+        "import": "./dist/theme/index.d.mts",
+        "require": "./dist/theme/index.d.cts"
+      },
+      "import": "./dist/theme/index.mjs",
+      "require": "./dist/theme/index.cjs"
+    },
+    "./theme/global": {
+      "types": {
+        "import": "./dist/theme/global.d.mts",
+        "require": "./dist/theme/global.d.cts"
+      },
+      "import": "./dist/theme/global.mjs",
+      "require": "./dist/theme/global.cjs"
+    },
+    "./theme/utils": {
+      "types": {
+        "import": "./dist/theme/utils.d.mts",
+        "require": "./dist/theme/utils.d.cts"
+      },
+      "import": "./dist/theme/utils.mjs",
+      "require": "./dist/theme/utils.cjs"
     }
   },
   "scripts": {
@@ -51,5 +102,25 @@
     "access": "public"
   },
   "author": "sprucepad",
-  "license": "MIT"
+  "license": "MIT",
+  "peerDependencies": {
+    "@convoker/core": "workspace:^",
+    "@convoker/log": "workspace:^",
+    "@convoker/prompt": "workspace:^",
+    "@convoker/theme": "workspace:^"
+  },
+  "peerDependenciesMeta": {
+    "@convoker/core": {
+      "optional": true
+    },
+    "@convoker/log": {
+      "optional": true
+    },
+    "@convoker/prompt": {
+      "optional": true
+    },
+    "@convoker/theme": {
+      "optional": true
+    }
+  }
 }

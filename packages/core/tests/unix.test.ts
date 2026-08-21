@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { unix, gnu, verbose, bsd } from "@/parsers/unix";
 import type { InputMapEntry } from "@/command";
-import { i } from "@/index";
-import type { Kind } from "@convoker/input";
+import * as i from "@/input";
+import type { Kind } from "@/input";
 
 function makeInputMap(entries: Record<string, Kind>) {
   const map = new Map<string | number, InputMapEntry>();

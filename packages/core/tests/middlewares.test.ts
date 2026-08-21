@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 import { Command } from "@/command";
 import { HelpAskedError, VersionAskedError } from "@/error";
 import { helpFlag, versionFlag } from "./middlewares";
-import { option } from "@convoker/input";
+import { option } from "@/input";
 
 describe("versionFlag()", () => {
   let root: Command<any>;

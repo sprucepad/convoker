@@ -1,4 +1,4 @@
-import { Positional, Option } from "@convoker/input";
+import { Positional, Option } from "@/input";
 import { Command } from "./command";
 
 /**

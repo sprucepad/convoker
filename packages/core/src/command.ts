@@ -17,7 +17,7 @@ import {
   Positional,
   type InferInput,
   type Input,
-} from "@convoker/input";
+} from "@/input";
 import { unix, type Parser } from "./parsers";
 
 /**

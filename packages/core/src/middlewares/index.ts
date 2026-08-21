@@ -1,6 +1,6 @@
 import type { Command, MiddlewareFn } from "@/command";
 import { HelpAskedError, VersionAskedError } from "@/error";
-import { Option } from "@convoker/input";
+import { Option } from "@/input";
 
 type VersionInput = {
   version: Option<"boolean", false>;
