@@ -1,7 +1,7 @@
 {
   "name": "@convoker/log",
   "type": "module",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A simple logging library.",
   "repository": {
     "type": "git",
@@ -36,12 +36,20 @@
   "dependencies": {
     "@convoker/theme": "workspace:^"
   },
+  "peerDependencies": {
+    "@convoker/theme": " workspace:^"
+  },
   "devDependencies": {
     "@dev/configs": "workspace:*",
     "@types/node": "~22.15.27",
     "eslint": "^10.2.1",
     "tsdown": "^0.21.10",
     "typescript": "^6.0.3"
+  },
+  "peerDependenciesMeta": {
+    "@convoker/theme": {
+      "optional": true
+    }
   },
   "publishConfig": {
     "access": "public"

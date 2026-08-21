@@ -1,7 +1,7 @@
 {
   "name": "convoker",
   "type": "module",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "A simple, type-safe CLI framework.",
   "repository": {
     "type": "git",
@@ -102,25 +102,5 @@
     "access": "public"
   },
   "author": "sprucepad",
-  "license": "MIT",
-  "peerDependencies": {
-    "@convoker/core": "workspace:^",
-    "@convoker/log": "workspace:^",
-    "@convoker/prompt": "workspace:^",
-    "@convoker/theme": "workspace:^"
-  },
-  "peerDependenciesMeta": {
-    "@convoker/core": {
-      "optional": true
-    },
-    "@convoker/log": {
-      "optional": true
-    },
-    "@convoker/prompt": {
-      "optional": true
-    },
-    "@convoker/theme": {
-      "optional": true
-    }
-  }
+  "license": "MIT"
 }
