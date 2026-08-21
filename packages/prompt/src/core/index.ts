@@ -1,5 +1,5 @@
 import tty from "node:tty";
-import type { StandardSchemaV1 } from "@convoker/input";
+import type { StandardSchemaV1 } from "@standard-schema/spec";
 import type { Theme } from "@convoker/theme";
 
 /**

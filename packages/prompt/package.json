@@ -30,7 +30,10 @@
     "prompt"
   ],
   "dependencies": {
-    "@convoker/input": "workspace:^",
+    "@convoker/theme": "workspace:^",
+    "@standard-schema/spec": "^1.1.0"
+  },
+  "peerDependencies": {
     "@convoker/theme": "workspace:^"
   },
   "devDependencies": {
@@ -39,6 +42,11 @@
     "eslint": "^10.2.1",
     "tsdown": "^0.21.10",
     "typescript": "^6.0.3"
+  },
+  "peerDependenciesMeta": {
+    "@convoker/theme": {
+      "optional": true
+    }
   },
   "files": [
     "src",
