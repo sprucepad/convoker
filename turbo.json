@@ -26,10 +26,12 @@
       "cache": false
     },
     "lint": {
-      "dependsOn": ["transit"]
+      "dependsOn": ["transit"],
+      "inputs": ["$TURBO_DEFAULTS$", "$TURBO_ROOT$/.oxlintrc.json"]
     },
     "lint:fix": {
       "dependsOn": ["transit"],
+      "inputs": ["$TURBO_DEFAULTS$", "$TURBO_ROOT$/.oxlintrc.json"],
       "cache": false
     },
 

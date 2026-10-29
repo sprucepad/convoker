@@ -1,7 +1,4 @@
 {
-  "categories": {
-    "correctness": "error"
-  },
   "options": {
     "typeAware": true
   }

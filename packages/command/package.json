@@ -12,6 +12,7 @@
   "type": "module",
   "exports": {
     ".": {
+      "::convoker/source": "./src/index.ts",
       "types": {
         "import": "./dist/index.d.mts",
         "require": "./dist/index.d.cts"
@@ -29,13 +30,13 @@
     "lint": "oxlint",
     "lint:fix": "oxlint --fix"
   },
+  "dependencies": {
+    "@standard-schema/spec": "catalog:"
+  },
   "devDependencies": {
     "oxlint": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
-  },
-  "dependencies": {
-    "@standard-schema/spec": "catalog:"
   }
 }

@@ -15,21 +15,12 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v6
+      - name: Install Node.js and pnpm
+        uses: pnpm/setup@v3
         with:
-          node-version: 22.22.2
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v5
-
-      - name: Install dependencies
-        run: pnpm install --ignore-scripts --frozen-lockfile
-
-      - name: Build
-        run: pnpm build:pkg
+          runtime: node@22.23.4
 
       - name: Publish
         run: pnpm -r publish --no-git-checks --provenance
