@@ -1,27 +1,26 @@
 import type { InferFormat } from "@/types/infer";
-import { ArrayBuilder, SingularBuilder } from "./builders";
+import { ArrayBuilder, Builder, type BuilderKind } from "./builders";
 
-export function positional<T extends string>(
-  format: T,
-): InferFormat<T> extends { array: true }
-  ? ArrayBuilder<InferFormat<T>["type"], "positional", InferFormat<T>["required"], false>
-  : SingularBuilder<InferFormat<T>["type"], "positional", InferFormat<T>["required"], false> {
+type InferBuilder<T extends string, TKind extends BuilderKind> =
+  InferFormat<T> extends {
+    required: infer Required extends boolean;
+    type: infer Type extends any;
+    array: infer IsArray extends boolean;
+  }
+    ? IsArray extends true
+      ? ArrayBuilder<Type, TKind, Required>
+      : Builder<Type, TKind, Required>
+    : never;
+
+export function positional<T extends string>(format: T): InferBuilder<T, "positional"> {
   throw new Error("TODO: not implemented");
 }
 
-export function option<T extends string>(
-  format: T,
-): InferFormat<T> extends { array: true }
-  ? ArrayBuilder<InferFormat<T>["type"], "option", InferFormat<T>["required"], false>
-  : SingularBuilder<InferFormat<T>["type"], "option", InferFormat<T>["required"], false> {
+export function option<T extends string>(format: T): InferBuilder<T, "option"> {
   throw new Error("TODO: not implemented");
 }
 
-export function env<T extends string>(
-  format: T,
-): InferFormat<T> extends { array: true }
-  ? ArrayBuilder<InferFormat<T>["type"], "env", InferFormat<T>["required"], false>
-  : SingularBuilder<InferFormat<T>["type"], "env", InferFormat<T>["required"], false> {
+export function env<T extends string>(format: T): InferBuilder<T, "env"> {
   throw new Error("TODO: not implemented");
 }
 
