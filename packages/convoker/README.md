@@ -4,38 +4,70 @@ Convoker is a simple, type-safe CLI framework for TypeScript. It provides severa
 
 ## Modules
 
-Each module can be installed independently, or simply with the [convoker](https://www.npmjs.com/package/convoker) package.
+### [Command](https://www.npmjs.com/package/@convoker/command)
 
-### [Core](https://www.npmjs.com/package/@convoker/core)
-
-A customizable CLI argument parser.
+A highly customizable CLI routing/argument parsing library.
 
 ```ts
-import { Command, i, parsers, middleware } from "convoker";
+import { Command, i, flags } from "@convoker/command";
+import * as v from "valibot";
 
-export default new Command("greet")
-  .description()
-  .input({
-    names: i.positional("string").list().optional(),
+import anotherExample from "./another-example-command";
+
+const program = new Command("static-server")
+  .use(flags.parsers.gnu(), flags.casing.kebab(), flags.help(), flags.version())
+  .input([
+    {
+      ports: i
+        .option("-p, --ports [PORT...:number]") // you can put a type here...
+        .validateEach(v.pipe(v.number(), v.integer(), v.minValue(0), v.maxValue(65535)))
+        .description("The port(s) to serve the files in.")
+        .default([8000]),
+      hosts: i
+        .option("-h, --hosts [HOSTS]")
+        .validate(v.array(v.pipe(v.string(), v.domain()))) // ...or here, through a Standard Schema validator, for more complex types
+        .description("The hostname(s) to serve files in.")
+        .default(["localhost"]),
+    },
+    {
+      path: i.positional("[path:string]").default("."),
+    },
+  ])
+  .action(({ options, args }) => {
+    console.log(options, args);
+    // ^ options: {
+    //   hosts: string[],
+    //   ports: number[],
+    // }
+    // ^ args: {
+    //   path: string,
+    // }
   })
-  .use(middleware.versionFlag(), middleware.helpFlag())
-  .use(async (input, next) => {
-    // Middleware logic
-    return next();
-  })
-  .action(async ({ names }) => {
-    names.forEach((name) => {
-      console.log(`Hello, ${name}!`);
-    });
-  });
+  .add("example", (c) =>
+    c.description("Example subcommand!").action(() => console.log("Hello, World!")),
+  )
+  .add(anotherExample);
+
+await program.run();
+```
+
+## [Keyboard](https://www.npmjs.com/package/@convoker/keyboard)
+
+A customizable CLI interactivity library, for adding custom interactivity to your app. This can also be used to create custom prompts.
+
+```ts
+import * as keyboard from "@convoker/keyboard";
+
+// TODO
+// Design an API for this
 ```
 
 ## [Prompt](https://www.npmjs.com/package/@convoker/prompt)
 
-A customizable CLI prompting library.
+A pre-built set of prompts for CLI applications, for adding interactivity and loading indicators to your app.
 
 ```ts
-import { prompt } from "convoker";
+import * as prompt from "@convoker/prompt";
 
 const confirmation = await prompt.confirm({
   message: "Are you sure you want to proceed?",
@@ -47,26 +79,12 @@ const password = await prompt.password({ message: "Password" });
 // You can also have editors, searching and selecting.
 ```
 
-### [Log](https://www.npmjs.com/package/@convoker/log)
-
-A logging library, with several logging levels and customizable messages.
-
-```ts
-import { log } from "convoker";
-
-log.trace("Debug information");
-log.info("Information");
-log.warn("Warning");
-log.error("Error");
-log.fatal("Fatal");
-```
-
 ### [Theme](https://www.npmjs.com/package/@convoker/theme)
 
-An ANSI coloring library, as well as theme definitions for core, logging and prompting.
+An ANSI coloring library.
 
 ```ts
-import { theme } from "convoker";
+import * as theme from "@convoker/theme";
 
 console.log(`${theme.bold("Hello,")} ${theme.green("World!")}`);
 ```

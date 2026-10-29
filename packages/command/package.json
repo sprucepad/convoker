@@ -1,0 +1,42 @@
+{
+  "name": "@convoker/command",
+  "version": "0.1.0",
+  "description": "🔃 A highly customizable CLI routing/argument parsing library.",
+  "keywords": [
+    "cli",
+    "parser",
+    "router"
+  ],
+  "license": "MIT",
+  "author": "sprucepad",
+  "type": "module",
+  "exports": {
+    ".": {
+      "::convoker/source": "./src/index.ts",
+      "types": {
+        "import": "./dist/index.d.mts",
+        "require": "./dist/index.d.cts"
+      },
+      "import": "./dist/index.d.mjs",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest --watch",
+    "check": "tsc --noEmit",
+    "build": "tsdown",
+    "prepublishOnly": "tsdown",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix"
+  },
+  "dependencies": {
+    "@standard-schema/spec": "catalog:"
+  },
+  "devDependencies": {
+    "oxlint": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}
