@@ -20,19 +20,19 @@
   },
   "devDependencies": {
     "@types/node": "catalog:",
-    "knip": "^6.43.0",
-    "oxfmt": "^0.75.0",
-    "oxlint-tsgolint": "^7.0.2005",
+    "knip": "^6.45.1",
+    "oxfmt": "^0.78.0",
+    "oxlint-tsgolint": "^7.0.2006",
     "tsdown": "catalog:",
-    "turbo": "^2.11.10",
+    "turbo": "^2.11.11",
     "typescript": "catalog:"
   },
   "devEngines": {
     "packageManager": {
       "name": "pnpm",
-      "version": "12.16.1",
+      "version": "12.18.0",
       "onFail": "download"
     }
   },
-  "packageManager": "pnpm@12.16.1"
+  "packageManager": "pnpm@12.18.0"
 }

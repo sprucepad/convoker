@@ -57,62 +57,62 @@ describe("Builder types", () => {
 
 describe("option(), positional() and env() types", () => {
   it("option() returns required Builder with correct type", () => {
-    const opt = option("--name, -n <NAME:string>");
-    expectTypeOf<typeof opt>().toExtend<Builder<string, "option", true>>();
+    const opt = option("--name, -n <NAME:number>");
+    expectTypeOf<typeof opt>().toExtend<Builder<number, "option", true>>();
   });
 
   it("option() returns required ArrayBuilder with correct type", () => {
-    const opt = option("--name, -n <NAME...:string>");
-    expectTypeOf<typeof opt>().toExtend<ArrayBuilder<string, "option", true>>();
+    const opt = option("--name, -n <NAME...:number>");
+    expectTypeOf<typeof opt>().toExtend<ArrayBuilder<number, "option", true>>();
   });
 
   it("option() returns optional Builder with correct type", () => {
-    const opt = option("--name, -n [NAME:string]");
-    expectTypeOf<typeof opt>().toExtend<Builder<string, "option", false>>();
+    const opt = option("--name, -n [NAME:number]");
+    expectTypeOf<typeof opt>().toExtend<Builder<number, "option", false>>();
   });
 
   it("option() returns optional ArrayBuilder with correct type", () => {
-    const opt = option("--name, -n [NAME...:string]");
-    expectTypeOf<typeof opt>().toExtend<ArrayBuilder<string, "option", false>>();
+    const opt = option("--name, -n [NAME...:number]");
+    expectTypeOf<typeof opt>().toExtend<ArrayBuilder<number, "option", false>>();
   });
 
   it("positional() returns required Builder with correct type", () => {
-    const opt = positional("--name, -n <NAME:string>");
-    expectTypeOf<typeof opt>().toExtend<Builder<string, "positional", true>>();
+    const opt = positional("--name, -n <NAME:number>");
+    expectTypeOf<typeof opt>().toExtend<Builder<number, "positional", true>>();
   });
 
   it("positional() returns required ArrayBuilder with correct type", () => {
-    const opt = positional("--name, -n <NAME...:string>");
-    expectTypeOf<typeof opt>().toExtend<ArrayBuilder<string, "positional", true>>();
+    const opt = positional("--name, -n <NAME...:number>");
+    expectTypeOf<typeof opt>().toExtend<ArrayBuilder<number, "positional", true>>();
   });
 
   it("positional() returns optional Builder with correct type", () => {
-    const opt = positional("--name, -n [NAME:string]");
-    expectTypeOf<typeof opt>().toExtend<Builder<string, "positional", false>>();
+    const opt = positional("--name, -n [NAME:number]");
+    expectTypeOf<typeof opt>().toExtend<Builder<number, "positional", false>>();
   });
 
   it("positional() returns optional ArrayBuilder with correct type", () => {
-    const opt = positional("--name, -n [NAME...:string]");
-    expectTypeOf<typeof opt>().toExtend<ArrayBuilder<string, "positional", false>>();
+    const opt = positional("--name, -n [NAME...:number]");
+    expectTypeOf<typeof opt>().toExtend<ArrayBuilder<number, "positional", false>>();
   });
 
   it("env() returns required Builder with correct type", () => {
-    const opt = env("--name, -n <NAME:string>");
-    expectTypeOf<typeof opt>().toExtend<Builder<string, "env", true>>();
+    const opt = env("--name, -n <NAME:number>");
+    expectTypeOf<typeof opt>().toExtend<Builder<number, "env", true>>();
   });
 
   it("env() returns required ArrayBuilder with correct type", () => {
-    const opt = env("--name, -n <NAME...:string>");
-    expectTypeOf<typeof opt>().toExtend<ArrayBuilder<string, "env", true>>();
+    const opt = env("--name, -n <NAME...:number>");
+    expectTypeOf<typeof opt>().toExtend<ArrayBuilder<number, "env", true>>();
   });
 
   it("env() returns optional Builder with correct type", () => {
-    const opt = env("--name, -n [NAME:string]");
-    expectTypeOf<typeof opt>().toExtend<Builder<string, "env", false>>();
+    const opt = env("--name, -n [NAME:number]");
+    expectTypeOf<typeof opt>().toExtend<Builder<number, "env", false>>();
   });
 
   it("env() returns optional ArrayBuilder with correct type", () => {
-    const opt = env("--name, -n [NAME...:string]");
-    expectTypeOf<typeof opt>().toExtend<ArrayBuilder<string, "positional", false>>();
+    const opt = env("--name, -n [NAME...:number]");
+    expectTypeOf<typeof opt>().toExtend<ArrayBuilder<number, "env", false>>();
   });
 });

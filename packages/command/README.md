@@ -13,18 +13,18 @@ const program = new Command("static-server")
   .input([
     {
       ports: i
-        .option("-p, --ports [PORT...:number]") // you can put a type here...
+        .option("-p, --port [PORT...:number]") // you can put a type here...
         .validateEach(v.pipe(v.number(), v.integer(), v.minValue(0), v.maxValue(65535)))
         .description("The port(s) to serve the files in.")
         .default([8000]),
       hosts: i
-        .option("-h, --hosts [HOSTS]")
+        .option("-h, --host [HOSTS...]")
         .validate(v.array(v.pipe(v.string(), v.domain()))) // ...or here, through a Standard Schema validator, for more complex types
         .description("The hostname(s) to serve files in.")
         .default(["localhost"]),
     },
     {
-      path: i.positional("[path:string]").default("."),
+      path: i.positional("[PATH:string]").default("."),
     },
   ])
   .action(({ options, args }) => {
