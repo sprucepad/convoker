@@ -70,16 +70,10 @@ export class ArrayBuilder<
   TType,
   TKind extends BuilderKind,
   TRequired extends boolean,
-  TResolved = TType,
+  TResolved = TType extends any[] ? TType : TType[],
   THasDefault extends boolean = false,
   TIsInherited extends boolean = false,
-> extends Builder<
-  TType extends any[] ? TType : TType[],
-  TKind,
-  TRequired,
-  TResolved extends any[] ? TResolved : TResolved[],
-  THasDefault
-> {
+> extends Builder<TType extends any[] ? TType : TType[], TKind, TRequired, TResolved, THasDefault> {
   public [VALIDATOR_ARRAY]?: StandardSchemaV1<TType extends any[] ? TType[number] : TType>;
 
   public validateEach<T extends StandardSchemaV1<TType extends any[] ? TType[number] : TType, any>>(

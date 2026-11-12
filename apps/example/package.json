@@ -3,12 +3,12 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "self": "oxnode src/index.ts"
-  },
-  "devDependencies": {
-    "@oxc-node/cli": "^1.0.1"
+    "self": "oxnode src/main.ts"
   },
   "dependencies": {
     "@convoker/command": "workspace:*"
+  },
+  "devDependencies": {
+    "@oxc-node/cli": "^1.0.1"
   }
 }
