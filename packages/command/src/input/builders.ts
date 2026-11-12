@@ -1,5 +1,9 @@
 import type { StandardSchemaV1 } from "@standard-schema/spec";
 
+export const TYPE = Symbol("__type__");
+export const KIND = Symbol("__kind__");
+export const HELP_STR = Symbol("__help_str__");
+export const NAMES = Symbol("__names__");
 export const REQUIRED = Symbol("__required__");
 export const VALIDATOR = Symbol("__validator__");
 export const VALIDATOR_ARRAY = Symbol("__validator_array__");
@@ -24,13 +28,13 @@ export class Builder<
   TResolved = TType,
   THasDefault extends boolean = false,
 > {
-  public [REQUIRED]: TRequired;
-  public [VALIDATOR]: StandardSchemaV1<TType, any> | undefined;
-  public [DEFAULT]: TType | undefined;
-
-  constructor(required: TRequired) {
-    this[REQUIRED] = required;
-  }
+  public [TYPE]!: string;
+  public [KIND]!: TKind;
+  public [REQUIRED]!: TRequired;
+  public [HELP_STR]!: string;
+  public [NAMES]?: string[];
+  public [VALIDATOR]?: StandardSchemaV1<TType, any>;
+  public [DEFAULT]?: TType;
 
   public default(val?: TType): Rebuild<this, TType, TKind, true, TResolved, true> {
     this[DEFAULT] = val;
@@ -58,9 +62,7 @@ export class ArrayBuilder<
   TResolved extends any[] ? TResolved : TResolved[],
   THasDefault
 > {
-  public [VALIDATOR_ARRAY]:
-    | StandardSchemaV1<TType extends any[] ? TType[number] : TType>
-    | undefined;
+  public [VALIDATOR_ARRAY]?: StandardSchemaV1<TType extends any[] ? TType[number] : TType>;
 
   public validateEach<T extends StandardSchemaV1<TType extends any[] ? TType[number] : TType, any>>(
     v: T,
