@@ -47,19 +47,19 @@ describe("Command types", () => {
     type Env = InferEnv<Inputs>;
 
     expectTypeOf<Options>().toMatchObjectType<{
-      test: string;
-      test2: number | undefined;
-      test3: boolean;
+      readonly test: string;
+      readonly test2: number | undefined;
+      readonly test3: boolean;
     }>();
     expectTypeOf<Args>().toMatchObjectType<{
-      test: string;
-      test2: number | undefined;
-      test3: boolean;
+      readonly test: string;
+      readonly test2: number | undefined;
+      readonly test3: boolean;
     }>();
     expectTypeOf<Env>().toMatchObjectType<{
-      test: string;
-      test2: number | undefined;
-      test3: boolean;
+      readonly test: string;
+      readonly test2: number | undefined;
+      readonly test3: boolean;
     }>();
   });
 });

@@ -1,5 +1,5 @@
 import type { Command } from "../command";
-import type { Builder, Input, InputObj } from "../input/builders";
+import type { Builder, BuilderKind, Input, InputObj } from "../input/builders";
 
 export type InferInherited<T> = T extends null
   ? [{}]
@@ -47,27 +47,33 @@ export type MergeInputs<A, B> = A extends any[]
     ? [A, ...B]
     : [A, B];
 
-export type InferOptions<T> = (T extends InputObj[] ? T : [T]) extends infer I
-  ? {
-      [
-        K in keyof I as I[K] extends Builder<any, "option", any, any, any, any> ? K : never
-      ]: InferBuilder<I[K]>;
-    }
+type InferInputObj<T extends InputObj, Kind extends BuilderKind> = {
+  [K in keyof T as T[K] extends Builder<any, Kind, any, any, any, any> ? K : never]: InferBuilder<
+    T[K]
+  >;
+};
+
+type UnionToIntersection<T> = (T extends any ? (value: T) => void : never) extends (
+  value: infer I,
+) => void
+  ? I
   : never;
-export type InferPositional<T> = (T extends InputObj[] ? T : [T]) extends infer I
-  ? {
-      [
-        K in keyof I as I[K] extends Builder<any, "positional", any, any, any, any> ? K : never
-      ]: InferBuilder<I[K]>;
-    }
-  : never;
-export type InferEnv<T> = (T extends InputObj[] ? T : [T]) extends infer I
-  ? {
-      [
-        K in keyof I as I[K] extends Builder<any, "env", any, any, any, any> ? K : never
-      ]: InferBuilder<I[K]>;
-    }
-  : never;
+
+type Simplify<T> = { [K in keyof T]: T[K] };
+
+type InferInputArray<T extends InputObj[], Kind extends BuilderKind> = Simplify<
+  UnionToIntersection<{ [K in keyof T]: InferInputObj<T[K], Kind> }[number]>
+>;
+
+type InferInput<T, Kind extends BuilderKind> = T extends InputObj[]
+  ? InferInputArray<T, Kind>
+  : T extends InputObj
+    ? InferInputObj<T, Kind>
+    : never;
+
+export type InferOptions<T> = InferInput<T, "option">;
+export type InferPositional<T> = InferInput<T, "positional">;
+export type InferEnv<T> = InferInput<T, "env">;
 
 export type InferBuilder<T> =
   T extends Builder<any, any, infer Required, infer Type, infer HasDefault, any>

@@ -1,6 +1,12 @@
 import type { Resolvable } from "@/types/utils";
 import type { Input } from "../input/builders";
-import type { InferInherited, InferPositional, MergeInputs } from "../types/infer";
+import type {
+  InferEnv,
+  InferInherited,
+  InferOptions,
+  InferPositional,
+  MergeInputs,
+} from "../types/infer";
 
 export const INPUT = Symbol("__input__");
 export const FN = Symbol("__fn__");
@@ -20,8 +26,8 @@ export type ActionFn<TInherited, TSelf, TInput = MergeInputs<TInherited, TSelf>>
   env,
 }: {
   args: InferPositional<TInput>;
-  options: InferPositional<TInput>;
-  env: InferPositional<TInput>;
+  options: InferOptions<TInput>;
+  env: InferEnv<TInput>;
 }) => Resolvable<number | void>;
 
 export class Command<TParent = null, TInput = {}, TInherited = InferInherited<TParent>> {
