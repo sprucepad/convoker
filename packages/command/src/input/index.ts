@@ -8,6 +8,7 @@ import {
   REQUIRED,
   TYPE,
   type BuilderKind,
+  type Input,
 } from "./builders";
 
 type InferBuilder<T extends string, TKind extends BuilderKind> =
@@ -46,6 +47,10 @@ export function env<T extends string>(format: T): InferBuilder<T, "env"> {
   const { builder } = parse(format);
   builder[KIND] = "env";
   return builder as any;
+}
+
+export function defineInput<const T extends Input>(input: T): T {
+  return input;
 }
 
 export * as builders from "./builders";

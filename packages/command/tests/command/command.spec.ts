@@ -1,13 +1,18 @@
 import { describe, expectTypeOf, it } from "vitest";
+
 import { Command } from ".";
-import type { Input } from "@/input/builders";
-import { option } from "@/input";
+import { defineInput, option } from "@/input";
 
 describe("Command types", () => {
   it("inherits input", () => {
-    const oneInput = {
-      test: option("--test [TEST:string]").inherit(),
-    } satisfies Input;
+    const oneInput = defineInput([
+      {
+        test: option("--test [TEST]").inherited(),
+      },
+      {
+        test2: option("--test2 [TEST]").inherited(),
+      },
+    ]);
     const command1 = new Command<null, typeof oneInput>();
     const command2 = new Command<typeof command1>();
 

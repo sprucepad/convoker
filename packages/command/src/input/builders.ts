@@ -60,7 +60,7 @@ export class Builder<
     return this;
   }
 
-  public inherit(): Rebuild<this, TType, TKind, TRequired, TResolved, THasDefault, true> {
+  public inherited(): Rebuild<this, TType, TKind, TRequired, TResolved, THasDefault, true> {
     this[IS_INHERITED] = true as any;
     return this as any;
   }

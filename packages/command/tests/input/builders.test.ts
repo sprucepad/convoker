@@ -1,12 +1,22 @@
 import { describe, expect, it } from "vitest";
+import * as v from "valibot";
 
 import { option, positional, env } from ".";
-import { ArrayBuilder, Builder, HELP_STR, KIND, NAMES, REQUIRED, TYPE } from "./builders";
+import {
+  ArrayBuilder,
+  Builder,
+  DEFAULT,
+  HELP_STR,
+  IS_INHERITED,
+  KIND,
+  NAMES,
+  REQUIRED,
+  TYPE,
+  VALIDATOR,
+  VALIDATOR_ARRAY,
+} from "./builders";
 
-// TODO builder class
-// describe("Builder class", () => {});
-
-describe("functions", () => {
+describe("string parsers", () => {
   describe("option()", () => {
     it("parses required option with multiple names correctly", () => {
       const opt = option("--name, -n <NAMES:string>");
@@ -149,5 +159,32 @@ describe("functions", () => {
       expect(opt[HELP_STR]).toBe("[NAMES...]");
       expect(opt[REQUIRED]).toBe(false);
     });
+  });
+});
+
+describe("Builder and ArrayBuilder classes", () => {
+  it("sets default value", () => {
+    const builder = option("[NAME:string]").default("Evan");
+
+    expect(builder[DEFAULT]).toBe("Evan");
+  });
+
+  it("sets validator", () => {
+    const validator = v.pipe(v.string(), v.minLength(3), v.maxLength(6));
+    const builder = option("[NAME:string]").validate(validator);
+
+    expect(builder[VALIDATOR]).toBe(validator);
+  });
+
+  it("sets inherited status", () => {
+    const builder = option("[NAME:string]").inherited();
+    expect(builder[IS_INHERITED]).toBe(true);
+  });
+
+  it("sets array validator", () => {
+    const validator = v.pipe(v.string(), v.minLength(3), v.maxLength(6));
+    const builder = option("[NAME...:string]").validateEach(validator);
+
+    expect(builder[VALIDATOR_ARRAY]).toBe(validator);
   });
 });

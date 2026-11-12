@@ -1,0 +1,14 @@
+{
+  "name": "@convoker/example",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "self": "oxnode src/index.ts"
+  },
+  "devDependencies": {
+    "@oxc-node/cli": "^1.0.1"
+  },
+  "dependencies": {
+    "@convoker/command": "workspace:*"
+  }
+}
