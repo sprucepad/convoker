@@ -1,4 +1,4 @@
-import type { InferFormat } from "@/types/infer";
+import type { InferFormat } from "../types/infer";
 import {
   ArrayBuilder,
   Builder,

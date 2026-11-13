@@ -5,10 +5,10 @@ export type InferInherited<T> = T extends null
   ? [{}]
   : T extends Input
     ? InheritedInput<T>
-    : T extends Command<any, infer TInput, infer Inherited>
+    : T extends Command<any, infer TInput, infer Inherited, infer Plugins>
       ? TInput extends Input
-        ? MergeInputs<InheritedInput<TInput>, Inherited>
-        : MergeInputs<Inherited, {}>
+        ? MergeInputs<[InheritedInput<TInput>, Inherited, Plugins]>
+        : MergeInputs<[Inherited]>
       : never;
 
 type InheritedInput<T extends Input> = T extends InputObj
@@ -39,13 +39,14 @@ type TypeOf<T> = T extends "string"
       ? boolean
       : never;
 
-export type MergeInputs<A, B> = A extends any[]
-  ? B extends any[]
-    ? [...A, ...B]
-    : [...A, B]
-  : B extends any[]
-    ? [A, ...B]
-    : [A, B];
+export type MergeInputs<T extends readonly unknown[]> = T extends readonly [
+  infer First,
+  ...infer Rest,
+]
+  ? First extends readonly unknown[]
+    ? [...MergeInputs<First>, ...MergeInputs<Rest>]
+    : [First, ...MergeInputs<Rest>]
+  : [];
 
 type InferInputObj<T extends InputObj, Kind extends BuilderKind> = {
   [K in keyof T as T[K] extends Builder<any, Kind, any, any, any, any> ? K : never]: InferBuilder<

@@ -3,12 +3,14 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "self": "oxnode src/main.ts"
+    "self": "oxnode src/main.ts",
+    "check": "tsc --noEmit"
   },
   "dependencies": {
     "@convoker/command": "workspace:*"
   },
   "devDependencies": {
-    "@oxc-node/cli": "^1.0.1"
+    "@oxc-node/cli": "^1.0.1",
+    "typescript": "catalog:"
   }
 }

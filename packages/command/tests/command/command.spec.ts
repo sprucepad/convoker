@@ -1,7 +1,7 @@
 import { describe, expectTypeOf, it } from "vitest";
 
 import { Command } from ".";
-import { env, option, positional } from "@/input";
+import { env, option, positional } from "../input";
 import type { InferEnv, InferOptions, InferPositional, MergeInputs } from "../index";
 
 describe("Command types", () => {
@@ -16,8 +16,10 @@ describe("Command types", () => {
     ]);
     const command2 = new Command<typeof command1>();
 
-    type OneInput = typeof command1 extends Command<any, infer T, infer I> ? [T, I] : never;
-    type TwoInput = typeof command2 extends Command<any, infer T, infer I> ? [T, I] : never;
+    type OneInput =
+      typeof command1 extends Command<any, infer T, infer I, infer P> ? [T, I, P] : never;
+    type TwoInput =
+      typeof command2 extends Command<any, infer T, infer I, infer P> ? [T, I, P] : never;
 
     expectTypeOf<TwoInput[1]>().toExtend<[...OneInput[0], {}]>();
   });
@@ -41,7 +43,10 @@ describe("Command types", () => {
       },
     ]);
 
-    type Inputs = typeof command extends Command<any, infer T, infer I> ? MergeInputs<T, I> : never;
+    type Inputs =
+      typeof command extends Command<any, infer T, infer I, infer P>
+        ? MergeInputs<[T, I, P]>
+        : never;
     type Options = InferOptions<Inputs>;
     type Args = InferPositional<Inputs>;
     type Env = InferEnv<Inputs>;
