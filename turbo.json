@@ -2,33 +2,47 @@
   "$schema": "https://turborepo.dev/schema.json",
   "ui": "tui",
   "tasks": {
-    // shared
-    "lint": {
-      "dependsOn": ["^lint"]
-    },
-    "lint:fix": {
-      "dependsOn": ["^lint:fix"]
-    },
-    "check": {
-      "dependsOn": ["^prepare", "^check"]
-    },
-    // packages
-    "prepare": {
-      "dependsOn": ["^prepare"],
-      "outputs": ["dist/**/*"]
-    },
-    // apps
     "dev": {
-      "dependsOn": ["^prepare"],
       "persistent": true,
       "cache": false
     },
+    "test": {
+      "dependsOn": ["transit"]
+    },
+    "test:watch": {
+      "persistent": true,
+      "cache": false
+    },
+    "check": {
+      "dependsOn": ["transit"]
+    },
     "build": {
-      "dependsOn": ["^prepare"],
+      "dependsOn": ["^build"],
       "outputs": ["dist/**/*"]
     },
     "serve": {
-      "dependsOn": ["^prepare", "build"]
+      "dependsOn": ["build"],
+      "persistent": true,
+      "cache": false
+    },
+    "lint": {
+      "dependsOn": ["transit"],
+      "inputs": ["$TURBO_DEFAULTS$", "$TURBO_ROOT$/.oxlintrc.json"]
+    },
+    "lint:fix": {
+      "dependsOn": ["transit"],
+      "inputs": ["$TURBO_DEFAULTS$", "$TURBO_ROOT$/.oxlintrc.json"],
+      "cache": false
+    },
+
+    "//#oxfmt:check": {},
+    "//#oxfmt": {
+      "cache": false
+    },
+    "//#knip:check": {},
+
+    "transit": {
+      "dependsOn": ["^transit"]
     }
   }
 }
