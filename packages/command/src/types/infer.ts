@@ -1,11 +1,12 @@
 import type { Command } from "../command";
 import type { Builder, BuilderKind, Input, InputObj } from "../input/builders";
+import type { Flatten } from "./utils";
 
 export type InferInherited<T> = T extends null
   ? [{}]
   : T extends Input
     ? InheritedInput<T>
-    : T extends Command<any, infer TInput, infer Inherited, infer Plugins>
+    : T extends Command<infer TInput, infer Inherited, infer Plugins>
       ? TInput extends Input
         ? Flatten<[InheritedInput<TInput>, Inherited, Plugins]>
         : Flatten<[Inherited]>

@@ -40,25 +40,20 @@ export type MiddlewareFn<TInputs extends readonly unknown[], TInput = Flatten<TI
 ) => Resolvable<number | void>;
 
 export type Middleware<Cmd extends AnyCommand | null = null> =
-  Cmd extends Command<any, infer T, infer I, infer P> ? MiddlewareFn<[T, I, P]> : MiddlewareFn<[]>;
+  Cmd extends Command<infer T, infer I, infer P> ? MiddlewareFn<[I, P, T]> : MiddlewareFn<[]>;
 
 export type Config = Plugin<any> | Parser | MiddlewareFn<any, any>;
 
 export type CommandBuilder<Self> = (c: Command<Self>) => AnyCommand | void;
 
-export type AnyCommand = Command<any, any, any, any>;
+export type AnyCommand = Command<any, any, any>;
 
-export class Command<
-  TParent = null,
-  TInput = {},
-  TInherited = InferInherited<TParent>,
-  TPlugins = [],
-> {
+export class Command<TInput = {}, TInherited = {}, TPlugins = []> {
   public [ALIASES]: string[];
   public [META]: Partial<Record<"version" | (string & {}), any>> = {};
   public [PARSER] = gnu({ verbose: false });
   public [MIDDLEWARE]: MiddlewareFn<any, any>[] = [];
-  public [CHILDREN] = new Map<string, { cmd: Command<any, any, any, any>; aliasFor?: string }>();
+  public [CHILDREN] = new Map<string, { cmd: AnyCommand; aliasFor?: string }>();
   public [PLUGINS]: PluginHost = new PluginHost();
   public [DESCRIPTION]?: string;
   public [INPUT]?: TInput;
@@ -66,6 +61,10 @@ export class Command<
 
   public constructor(...aliases: string[]) {
     this[ALIASES] = aliases;
+  }
+
+  public inheritFrom<T extends AnyCommand>(): Command<TInput, InferInherited<T>, TPlugins> {
+    return this as any;
   }
 
   public add(names: string | string[], builder: CommandBuilder<this>): this;
@@ -76,7 +75,7 @@ export class Command<
     namesOrCmd: string | string[] | AnyCommand,
     builderOrCmd?: CommandBuilder<this> | AnyCommand,
   ) {
-    let cmd: Command<any, any, any, any> =
+    let cmd: AnyCommand =
       typeof namesOrCmd === "object" && !Array.isArray(namesOrCmd)
         ? namesOrCmd
         : typeof builderOrCmd === "function"
@@ -107,7 +106,7 @@ export class Command<
 
   public use<T extends Config[]>(
     ...middleware: T
-  ): Command<TParent, TInput, TInherited, GetPluginExtensions<T>> {
+  ): Command<TInput, TInherited, GetPluginExtensions<T>> {
     for (const mw of middleware) {
       if (typeof mw === "function") this[MIDDLEWARE].push(mw);
       else if (mw.type === "plugin") this[PLUGINS].plugins.push(mw);
@@ -126,7 +125,7 @@ export class Command<
     return this;
   }
 
-  public input<const T extends Input>(i: T): Command<TParent, T, TInherited, TPlugins> {
+  public input<const T extends Input>(i: T): Command<T, TInherited, TPlugins> {
     this[INPUT] = i as any;
     return this as any;
   }
@@ -161,5 +160,5 @@ type GetPluginExtensions<T extends Config[]> = {
     : never;
 };
 
-export * from "./reifier";
+export * as reifier from "./reifier";
 export * from "./plugin";

@@ -1,4 +1,4 @@
-import { defineParser, type Parser } from "../command";
+import { defineParser, type AST, type Parser } from "../command";
 
 export function gnu(opts?: { verbose?: boolean }) {
   const { verbose = true } = opts ?? {};
@@ -16,7 +16,13 @@ export function gnu(opts?: { verbose?: boolean }) {
       });
     },
 
-    parse(argv) {},
+    parse(argv) {
+      const ast: AST = [];
+
+      void argv; // TODO
+
+      return ast;
+    },
   });
 }
 

@@ -2,7 +2,8 @@ import { describe, expectTypeOf, it } from "vitest";
 
 import { Command } from ".";
 import { env, option, positional } from "../input";
-import type { InferEnv, InferOptions, InferPositional, Flatten } from "../index";
+import type { InferEnv, InferOptions, InferPositional } from "../types/infer";
+import type { Flatten } from "../types/utils";
 
 describe("Command types", () => {
   it("inherits input", () => {
@@ -14,12 +15,12 @@ describe("Command types", () => {
         test2: option("--test2 [TEST2]").inherited(),
       },
     ]);
-    const command2 = new Command<typeof command1>();
+    const command2 = new Command().inheritFrom<typeof command1>();
 
-    type OneInput =
-      typeof command1 extends Command<any, infer T, infer I, infer P> ? [T, I, P] : never;
-    type TwoInput =
-      typeof command2 extends Command<any, infer T, infer I, infer P> ? [T, I, P] : never;
+    command1.add(command2);
+
+    type OneInput = typeof command1 extends Command<infer T, infer I, infer P> ? [T, I, P] : never;
+    type TwoInput = typeof command2 extends Command<infer T, infer I, infer P> ? [T, I, P] : never;
 
     expectTypeOf<TwoInput[1]>().toExtend<[...OneInput[0], {}]>();
   });
@@ -44,7 +45,7 @@ describe("Command types", () => {
     ]);
 
     type Inputs =
-      typeof command extends Command<any, infer T, infer I, infer P> ? Flatten<[T, I, P]> : never;
+      typeof command extends Command<infer T, infer I, infer P> ? Flatten<[T, I, P]> : never;
     type Options = InferOptions<Inputs>;
     type Args = InferPositional<Inputs>;
     type Env = InferEnv<Inputs>;
