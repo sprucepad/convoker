@@ -93,15 +93,23 @@ export async function traverseAndBuild(
 
   outer: for (const [key, builder] of mappers.env) {
     if (isArrayBuilder(builder)) {
-      env[key] ??= [];
-
       const split = process.env[key]!.split(",");
+
+      const arr: any[] = [];
       for (const rawValue of split) {
         const { validatedValue, isError } = await validate(rawValue.trim(), builder, errors);
         if (isError) continue outer;
 
-        env[key].push(validatedValue);
+        arr.push(validatedValue);
       }
+
+      const validationResult = await builder[VALIDATOR]?.["~standard"].validate(arr);
+      if (validationResult?.issues) {
+        errors.push(new Error("Validation error!"));
+        continue;
+      }
+
+      env[key] = validationResult?.value ?? arr;
     } else if (isSingleBuilder(builder)) {
       const { validatedValue, isError } = await validate(process.env[key]!, builder, errors);
       if (isError) continue;
@@ -111,7 +119,9 @@ export async function traverseAndBuild(
   }
 
   const toValidateOptions = new Map<AnyArrayBuilder, [string, ...any[]]>();
+
   let lastCommand = false;
+  let variadicArg: { builder: AnyArrayBuilder; key: string; values: any[] } | undefined;
   let argIndex = 0;
 
   while (i < ast.length) {
@@ -126,7 +136,7 @@ export async function traverseAndBuild(
             builder[TYPE] === "boolean" || builder[TYPE] === "bool"
               ? Boolean(node.value ?? true)
               : node.value;
-          if (!value && builder[REQUIRED]) {
+          if (value == null && builder[REQUIRED]) {
             const valueNode = ast[++i];
             if (!valueNode) {
               errors.push(new Error(`Missing value for ${builder[HELP_STR]}!`));
@@ -149,22 +159,35 @@ export async function traverseAndBuild(
         break;
       }
       case "positional": {
-        const child = cmd[CHILDREN].get(node.rawValue);
-        if (child) {
-          i = await traverseAndBuild(child.cmd, ast, getNames, ++i, options, args, env, errors);
-          break;
-        } else {
-          lastCommand = true;
-        }
+        if (!lastCommand) {
+          const child = cmd[CHILDREN].get(node.rawValue);
+          if (child) {
+            i = await traverseAndBuild(child.cmd, ast, getNames, ++i, options, args, env, errors);
+            break;
+          } else {
+            lastCommand = true;
+          }
+        } else if (variadicArg) {
+          const { validatedValue, isError } = await validate(
+            node.rawValue,
+            variadicArg.builder,
+            errors,
+          );
+          if (isError) break;
 
-        if (lastCommand) {
+          variadicArg.values.push(validatedValue);
+        } else {
           const arg = mappers.arg[argIndex++];
           if (!arg) break;
 
           const { validatedValue, isError } = await validate(node.rawValue, arg, errors);
           if (isError) break;
 
-          args[arg.__key] = validatedValue;
+          if (isArrayBuilder(arg)) {
+            variadicArg = { builder: arg, key: arg.__key, values: [validatedValue] };
+          } else if (isSingleBuilder(arg)) {
+            args[arg.__key] = validatedValue;
+          }
         }
 
         break;
@@ -175,7 +198,21 @@ export async function traverseAndBuild(
   }
 
   for (const [builder, [key, ...values]] of toValidateOptions) {
-    options[key] = (await builder[VALIDATOR]?.["~standard"].validate(values)) ?? values;
+    const { validatedValue, isError } = await validateArray(values, builder, errors);
+    if (isError) continue;
+
+    options[key] = validatedValue;
+  }
+
+  if (variadicArg) {
+    const { validatedValue, isError } = await validateArray(
+      variadicArg.values,
+      variadicArg.builder,
+      errors,
+    );
+    if (isError) return i;
+
+    args[variadicArg.key] = validatedValue;
   }
 
   return i;
@@ -207,6 +244,20 @@ async function validate(
     isError: false,
     validatedValue: validatedValue ?? convertedValue,
   };
+}
+
+async function validateArray(
+  values: any[],
+  builder: AnyBuilder,
+  errors: Error[],
+): Promise<ValidationResult> {
+  const validationResult = await builder[VALIDATOR]?.["~standard"].validate(values);
+  if (validationResult?.issues) {
+    errors.push(new Error("Validation error!"));
+    return { isError: true };
+  }
+
+  return { validatedValue: validationResult?.value ?? values, isError: false };
 }
 
 function convert(raw: string, type: string) {
