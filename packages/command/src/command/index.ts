@@ -1,13 +1,10 @@
 import type { Resolvable } from "../types/utils";
 import type { Input } from "../input/builders";
-import type {
-  InferEnv,
-  InferInherited,
-  InferOptions,
-  InferPositional,
-  MergeInputs as Flatten,
-} from "../types/infer";
+import type { InferEnv, InferInherited, InferOptions, InferPositional } from "../types/infer";
+import type { Flatten } from "../types/utils";
 import { gnu } from "../flags/parsers";
+import { reify, type ConcreteCLITree } from "./transformer";
+import type { Parser, Plugin } from "./plugin";
 
 export const ALIASES = Symbol("__aliases__");
 export const DESCRIPTION = Symbol("__description__");
@@ -19,40 +16,6 @@ export const META = Symbol("__meta__");
 export const INPUT = Symbol("__input__");
 export const FN = Symbol("__fn__");
 
-export interface ParseResult {
-  options: Record<string, (string | boolean)[]>;
-  args: string[];
-}
-
-export interface BaseContext {
-  cmd: Command<any, any, any, any>;
-}
-
-export interface ContextWithInput extends BaseContext {
-  input: unknown;
-}
-
-export interface Plugin<_Ext = {}> {
-  type: "plugin";
-
-  beforeParseSelf?({ cmd }: BaseContext): Resolvable<void>;
-  beforeParseGlobal?({ cmd }: BaseContext): Resolvable<void>;
-  afterParseGlobal?({ cmd, input }: ContextWithInput): Resolvable<void>;
-  afterParseSelf?({ cmd, input }: ContextWithInput): Resolvable<void>;
-
-  beforeRun?({ cmd, input }: ContextWithInput): Resolvable<void>;
-  afterRun?({ cmd, input }: ContextWithInput): Resolvable<void>;
-
-  catchSelf?({ cmd, input }: ContextWithInput): Resolvable<void>;
-  catchGlobal?({ cmd, input }: ContextWithInput): Resolvable<void>;
-}
-
-export interface Parser {
-  type: "parser";
-
-  parse(argv: string[]): Resolvable<ParseResult>;
-}
-
 export type ActionFn<TInputs extends readonly unknown[], TInput = Flatten<TInputs>> = ({
   args,
   options,
@@ -63,7 +26,7 @@ export type ActionFn<TInputs extends readonly unknown[], TInput = Flatten<TInput
   env: InferEnv<TInput>;
 }) => Resolvable<number | void>;
 
-export type Middleware<TInputs extends readonly unknown[], TInput = Flatten<TInputs>> = (
+export type MiddlewareFn<TInputs extends readonly unknown[], TInput = Flatten<TInputs>> = (
   {
     args,
     options,
@@ -76,7 +39,14 @@ export type Middleware<TInputs extends readonly unknown[], TInput = Flatten<TInp
   next: () => Promise<number | void>,
 ) => Resolvable<number | void>;
 
-type Config = Plugin<any> | Parser | Middleware<any, any>;
+export type Middleware<Cmd extends AnyCommand | null = null> =
+  Cmd extends Command<any, infer T, infer I, infer P> ? MiddlewareFn<[T, I, P]> : MiddlewareFn<[]>;
+
+export type Config = Plugin<any> | Parser | MiddlewareFn<any, any>;
+
+export type CommandBuilder<Self> = (c: Command<Self>) => AnyCommand | void;
+
+export type AnyCommand = Command<any, any, any, any>;
 
 export class Command<
   TParent = null,
@@ -86,9 +56,9 @@ export class Command<
 > {
   public [ALIASES]: string[];
   public [META]: Partial<Record<"version" | (string & {}), any>> = {};
-  public [PARSER] = gnu();
-  public [MIDDLEWARE]: Middleware<any, any>[] = [];
-  public [CHILDREN] = new Map<string, Command<any, any, any, any>>();
+  public [PARSER] = gnu({ verbose: false });
+  public [MIDDLEWARE]: MiddlewareFn<any, any>[] = [];
+  public [CHILDREN] = new Map<string, { cmd: Command<any, any, any, any>; aliasFor?: string }>();
   public [PLUGINS]: Plugin[] = [];
   public [DESCRIPTION]?: string;
   public [INPUT]?: TInput;
@@ -96,6 +66,43 @@ export class Command<
 
   public constructor(...aliases: string[]) {
     this[ALIASES] = aliases;
+  }
+
+  public add(names: string | string[], builder: CommandBuilder<this>): this;
+  public add(names: string | string[], c: AnyCommand): this;
+  public add(c: AnyCommand): this;
+
+  public add(
+    namesOrCmd: string | string[] | AnyCommand,
+    builderOrCmd?: CommandBuilder<this> | AnyCommand,
+  ) {
+    let cmd: Command<any, any, any, any> =
+      typeof namesOrCmd === "object" && !Array.isArray(namesOrCmd)
+        ? namesOrCmd
+        : typeof builderOrCmd === "function"
+          ? (() => {
+              const command = new Command(...namesOrCmd) as any;
+              const result = builderOrCmd(command);
+
+              if (result) return result;
+              else return command;
+            })()
+          : builderOrCmd;
+    const names = Array.isArray(namesOrCmd)
+      ? namesOrCmd
+      : typeof namesOrCmd === "string"
+        ? [namesOrCmd]
+        : cmd[ALIASES];
+
+    for (let i = 0; i < names.length; i++) {
+      const name = names[i]!;
+      this[CHILDREN].set(name, {
+        cmd,
+        aliasFor: i === 0 ? undefined : names[0]!,
+      });
+    }
+
+    return this;
   }
 
   public use<T extends Config[]>(
@@ -129,17 +136,19 @@ export class Command<
     return this;
   }
 
-  public async run() {
+  public printHelpMessage() {
     throw new Error("TODO: not implemented");
   }
-}
 
-export function defineParser(parser: Omit<Parser, "type">): Parser {
-  return Object.assign(parser, { type: "parser" as const });
-}
+  public async parse(
+    argv = process.argv.slice(2),
+  ): Promise<ConcreteCLITree<[TInherited, TInput, TPlugins]>> {
+    return reify(argv, this as any, this[PARSER]);
+  }
 
-export function definePlugin<T = {}>(plugin: Omit<Plugin<T>, "type">): Plugin<T> {
-  return Object.assign(plugin, { type: "plugin" as const });
+  public async run(argv = process.argv.slice(2)) {
+    throw new Error("TODO: not implemented");
+  }
 }
 
 type GetPluginExtensions<T extends Config[]> = {
@@ -147,3 +156,6 @@ type GetPluginExtensions<T extends Config[]> = {
     ? Ext
     : never;
 };
+
+export * from "./transformer";
+export * from "./plugin";

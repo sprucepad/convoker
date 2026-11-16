@@ -2,7 +2,7 @@ import { describe, expectTypeOf, it } from "vitest";
 
 import { Command } from ".";
 import { env, option, positional } from "../input";
-import type { InferEnv, InferOptions, InferPositional, MergeInputs } from "../index";
+import type { InferEnv, InferOptions, InferPositional, Flatten } from "../index";
 
 describe("Command types", () => {
   it("inherits input", () => {
@@ -44,9 +44,7 @@ describe("Command types", () => {
     ]);
 
     type Inputs =
-      typeof command extends Command<any, infer T, infer I, infer P>
-        ? MergeInputs<[T, I, P]>
-        : never;
+      typeof command extends Command<any, infer T, infer I, infer P> ? Flatten<[T, I, P]> : never;
     type Options = InferOptions<Inputs>;
     type Args = InferPositional<Inputs>;
     type Env = InferEnv<Inputs>;

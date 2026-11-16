@@ -7,8 +7,8 @@ export type InferInherited<T> = T extends null
     ? InheritedInput<T>
     : T extends Command<any, infer TInput, infer Inherited, infer Plugins>
       ? TInput extends Input
-        ? MergeInputs<[InheritedInput<TInput>, Inherited, Plugins]>
-        : MergeInputs<[Inherited]>
+        ? Flatten<[InheritedInput<TInput>, Inherited, Plugins]>
+        : Flatten<[Inherited]>
       : never;
 
 type InheritedInput<T extends Input> = T extends InputObj
@@ -38,15 +38,6 @@ type TypeOf<T> = T extends "string"
     : T extends "bool" | "boolean"
       ? boolean
       : never;
-
-export type MergeInputs<T extends readonly unknown[]> = T extends readonly [
-  infer First,
-  ...infer Rest,
-]
-  ? First extends readonly unknown[]
-    ? [...MergeInputs<First>, ...MergeInputs<Rest>]
-    : [First, ...MergeInputs<Rest>]
-  : [];
 
 type InferInputObj<T extends InputObj, Kind extends BuilderKind> = {
   [K in keyof T as T[K] extends Builder<any, Kind, any, any, any, any> ? K : never]: InferBuilder<

@@ -1,6 +1,7 @@
 import type { StandardSchemaV1 } from "@standard-schema/spec";
 
 export const TYPE = Symbol("__type__");
+export const BUILDER_TYPE = Symbol("__builder_type__");
 export const KIND = Symbol("__kind__");
 export const HELP_STR = Symbol("__help_str__");
 export const NAMES = Symbol("__names__");
@@ -23,6 +24,8 @@ type Rebuild<
 
 export type BuilderKind = "positional" | "option" | "env";
 
+export type BuilderTypes = "single" | "array";
+
 export class Builder<
   TType,
   TKind extends BuilderKind,
@@ -31,6 +34,8 @@ export class Builder<
   THasDefault extends boolean = false,
   TIsInherited extends boolean = false,
 > {
+  public [BUILDER_TYPE]: BuilderTypes = "single";
+
   public [TYPE]!: string;
   public [KIND]!: TKind;
   public [REQUIRED]!: TRequired;
@@ -74,6 +79,8 @@ export class ArrayBuilder<
   THasDefault extends boolean = false,
   TIsInherited extends boolean = false,
 > extends Builder<TType extends any[] ? TType : TType[], TKind, TRequired, TResolved, THasDefault> {
+  public override [BUILDER_TYPE]: BuilderTypes = "array";
+
   public [VALIDATOR_ARRAY]?: StandardSchemaV1<TType extends any[] ? TType[number] : TType>;
 
   public validateEach<T extends StandardSchemaV1<TType extends any[] ? TType[number] : TType, any>>(
@@ -92,8 +99,9 @@ export class ArrayBuilder<
   }
 }
 
-export type InputObj = Record<
-  string,
-  Builder<any, any, any, any, any, any> | ArrayBuilder<any, any, any, any, any, any>
->;
+export type AnySingleBuilder = Builder<any, BuilderKind, boolean, any, boolean, boolean>;
+export type AnyArrayBuilder = ArrayBuilder<any, BuilderKind, boolean, any, boolean, boolean>;
+export type AnyBuilder = AnySingleBuilder | AnyArrayBuilder;
+
+export type InputObj = Record<string, AnyBuilder>;
 export type Input = InputObj | InputObj[];
