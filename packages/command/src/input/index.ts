@@ -23,7 +23,7 @@ type InferBuilder<T extends string, TKind extends BuilderKind> =
     : never;
 
 const FORMAT_REGEX =
-  /(?<names>(?:--[\w-]+|-[\w-]+)(?:\s*,\s*(?:--[\w-]+|-[\w-]+))*)?\s*(?<bracket>[<[])(?<help>[A-Z_][A-Z0-9_]*)?(?<variadic>\.\.\.)?(?::(?<type>[\w-]+))?[>\]]/;
+  /(?<names>(?:--[\w-]+|-[\w-]+)(?:\s*,\s*(?:--[\w-]+|-[\w-]+))*)?(\s|=)*(?<bracket>[<[])(?<help>[A-Z_][A-Z0-9_]*)?(?<variadic>\.\.\.)?(?::(?<type>[\w-]+))?[>\]]/;
 
 // Parse format strings like:
 

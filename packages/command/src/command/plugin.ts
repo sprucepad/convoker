@@ -1,11 +1,10 @@
 import type { AnyCommand } from ".";
 import type { Resolvable } from "../types/utils";
-import type { ConcreteCLITree } from "./transformer";
+import type { ConcreteCLITree } from "./reifier";
 
 export interface BaseContext {
   cmd: AnyCommand;
   stage: "parse" | "run";
-  next: () => Promise<void>;
 }
 
 export interface ContextWithParseResult extends BaseContext {
@@ -23,16 +22,36 @@ export function definePlugin<T = {}>(plugin: Omit<Plugin<T>, "type">): Plugin<T>
 export interface Plugin<_Ext = {}> {
   type: "plugin";
 
-  beforeParseSelf?({ cmd, next }: BaseContext): Resolvable<void>;
-  beforeParseChildren?({ cmd, next }: BaseContext): Resolvable<void>;
-  afterParseChildren?({ cmd, parseResult, next }: ContextWithParseResult): Resolvable<void>;
-  afterParseSelf?({ cmd, parseResult, next }: ContextWithParseResult): Resolvable<void>;
+  beforeParse?({ cmd }: BaseContext): Resolvable<void>;
+  afterParse?({ cmd, parseResult }: ContextWithParseResult): Resolvable<void>;
 
-  beforeRun?({ cmd, parseResult, next }: ContextWithParseResult): Resolvable<void>;
-  afterRun?({ cmd, parseResult, next }: ContextWithParseResult): Resolvable<void>;
+  beforeRun?({ cmd, parseResult }: ContextWithParseResult): Resolvable<void>;
+  afterRun?({ cmd, parseResult }: ContextWithParseResult): Resolvable<void>;
 
-  catchSelf?({ cmd, parseResult, next }: ContextWithParseResult): Resolvable<void>;
-  catchChildren?({ cmd, parseResult, next }: ContextWithParseResult): Resolvable<void>;
+  catch?({ cmd, parseResult }: ContextWithParseResult): Resolvable<void>;
+}
+
+export class PluginHost implements Required<Plugin> {
+  public type = "plugin" as const;
+  public plugins: Plugin<any>[] = [];
+
+  private hook<K extends Exclude<keyof Plugin, "type">>(key: K): NonNullable<Plugin[K]> {
+    return async (ctx: any) => {
+      await Promise.all(
+        this.plugins.map(async (plugin) => {
+          await plugin[key]?.(ctx);
+        }),
+      );
+    };
+  }
+
+  public beforeParse = this.hook("beforeParse");
+  public afterParse = this.hook("afterParse");
+
+  public beforeRun = this.hook("beforeRun");
+  public afterRun = this.hook("afterRun");
+
+  public catch = this.hook("catch");
 }
 
 export interface Parser {

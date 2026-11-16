@@ -3,8 +3,8 @@ import type { Input } from "../input/builders";
 import type { InferEnv, InferInherited, InferOptions, InferPositional } from "../types/infer";
 import type { Flatten } from "../types/utils";
 import { gnu } from "../flags/parsers";
-import { reify, type ConcreteCLITree } from "./transformer";
-import type { Parser, Plugin } from "./plugin";
+import { reify, type ConcreteCLITree } from "./reifier";
+import { PluginHost, type Parser, type Plugin } from "./plugin";
 
 export const ALIASES = Symbol("__aliases__");
 export const DESCRIPTION = Symbol("__description__");
@@ -59,7 +59,7 @@ export class Command<
   public [PARSER] = gnu({ verbose: false });
   public [MIDDLEWARE]: MiddlewareFn<any, any>[] = [];
   public [CHILDREN] = new Map<string, { cmd: Command<any, any, any, any>; aliasFor?: string }>();
-  public [PLUGINS]: Plugin[] = [];
+  public [PLUGINS]: PluginHost = new PluginHost();
   public [DESCRIPTION]?: string;
   public [INPUT]?: TInput;
   public [FN]?: ActionFn<[TInherited, TInput, TPlugins]>;
@@ -110,7 +110,7 @@ export class Command<
   ): Command<TParent, TInput, TInherited, GetPluginExtensions<T>> {
     for (const mw of middleware) {
       if (typeof mw === "function") this[MIDDLEWARE].push(mw);
-      else if (mw.type === "plugin") this[PLUGINS].push(mw);
+      else if (mw.type === "plugin") this[PLUGINS].plugins.push(mw);
       else if (mw.type === "parser") this[PARSER] = mw;
     }
     return this as any;
@@ -143,11 +143,15 @@ export class Command<
   public async parse(
     argv = process.argv.slice(2),
   ): Promise<ConcreteCLITree<[TInherited, TInput, TPlugins]>> {
-    return reify(argv, this as any, this[PARSER]);
+    return reify(argv, this as any);
   }
 
   public async run(argv = process.argv.slice(2)) {
-    throw new Error("TODO: not implemented");
+    const cst = await this.parse(argv);
+
+    // TODO run actions and middleware
+
+    return cst;
   }
 }
 
@@ -157,5 +161,5 @@ type GetPluginExtensions<T extends Config[]> = {
     : never;
 };
 
-export * from "./transformer";
+export * from "./reifier";
 export * from "./plugin";

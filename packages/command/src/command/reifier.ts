@@ -1,6 +1,6 @@
 import process from "node:process";
-import { CHILDREN, INPUT, type AnyCommand } from ".";
-import type { AST, Parser } from "./plugin";
+import { CHILDREN, INPUT, PARSER, PLUGINS, type AnyCommand } from ".";
+import type { AST } from "./plugin";
 import type { InferOptions, InferPositional } from "../types/infer";
 import type { Flatten } from "../types/utils";
 import {
@@ -30,25 +30,24 @@ export interface ConcreteCLITree<TInputs extends readonly unknown[], TInput = Fl
   errors?: Error[];
 }
 
-export async function reify(
-  argv: string[],
-  command: AnyCommand,
-  parser: Parser,
-): Promise<ConcreteCLITree<any, any>> {
+export async function reify(argv: string[], cmd: AnyCommand): Promise<ConcreteCLITree<any, any>> {
   const options: any = {};
   const args: any = {};
   const env: any = {};
   const errors: Error[] = [];
 
-  const ast = await parser.parse(argv);
-  await traverseAndBuild(command, ast, parser.getNames.bind(parser), 0, options, args, env, errors);
+  const parser = cmd[PARSER];
+  const pluginHost = cmd[PLUGINS];
 
-  return {
-    options,
-    args,
-    env,
-    command,
-  };
+  await pluginHost.beforeParse({ cmd, stage: "parse" });
+
+  const ast = await parser.parse(argv);
+  await traverseAndBuild(cmd, ast, parser.getNames.bind(parser), 0, options, args, env, errors);
+
+  const parseResult = { command: cmd, options, args, env };
+  await pluginHost.afterParse({ cmd, stage: "parse", parseResult });
+
+  return parseResult;
 }
 
 export async function traverseAndBuild(
@@ -63,7 +62,7 @@ export async function traverseAndBuild(
 ) {
   const input = flatten(cmd[INPUT]);
 
-  const maps = input.reduce(
+  const mappers = input.reduce(
     (acc, obj) => {
       for (const key in obj) {
         const builder = obj[key]!;
@@ -75,7 +74,7 @@ export async function traverseAndBuild(
             acc.option.set(key, builder);
             break;
           case "positional":
-            acc.arg.set(key, builder);
+            acc.arg.push(Object.assign(builder, { __key: key }));
             break;
           default:
             const exhaustive: never = builder[KIND];
@@ -87,23 +86,41 @@ export async function traverseAndBuild(
     },
     {
       option: new Map<string, AnyBuilder>(),
-      arg: new Map<string, AnyBuilder>(),
+      arg: [] as (AnyBuilder & { __key: string })[],
       env: new Map<string, AnyBuilder>(),
     },
   );
 
+  outer: for (const [key, builder] of mappers.env) {
+    if (isArrayBuilder(builder)) {
+      env[key] ??= [];
+
+      const split = process.env[key]!.split(",");
+      for (const rawValue of split) {
+        const { validatedValue, isError } = await validate(rawValue.trim(), builder, errors);
+        if (isError) continue outer;
+
+        env[key].push(validatedValue);
+      }
+    } else if (isSingleBuilder(builder)) {
+      const { validatedValue, isError } = await validate(process.env[key]!, builder, errors);
+      if (isError) continue;
+
+      env[key] = validatedValue;
+    }
+  }
+
   const toValidateOptions = new Map<AnyArrayBuilder, [string, ...any[]]>();
-  const toValidateArgs = new Map<AnyArrayBuilder, [string, ...any[]]>();
-  const toValidateEnv = new Map<AnyArrayBuilder, [string, ...any[]]>();
   let lastCommand = false;
+  let argIndex = 0;
 
   while (i < ast.length) {
     const node = ast[i]!;
     switch (node.type) {
       case "option": {
-        for (const [key, builder] of maps.option) {
+        for (const [key, builder] of mappers.option) {
           const names = getNames(builder[NAMES] ?? [key]);
-          if (!names.some((name) => name && node.names.includes(name))) continue;
+          if (!names.some((name) => name && node.names.includes(name))) break;
 
           let value =
             builder[TYPE] === "boolean" || builder[TYPE] === "bool"
@@ -113,14 +130,14 @@ export async function traverseAndBuild(
             const valueNode = ast[++i];
             if (!valueNode) {
               errors.push(new Error(`Missing value for ${builder[HELP_STR]}!`));
-              continue;
+              break;
             }
 
             value = valueNode.rawValue;
           }
 
           const { validatedValue, isError } = await validate(node.rawValue, builder, errors);
-          if (isError) continue;
+          if (isError) break;
 
           if (isArrayBuilder(builder)) {
             if (!toValidateOptions.get(builder)) toValidateOptions.set(builder, [key]);
@@ -135,50 +152,30 @@ export async function traverseAndBuild(
         const child = cmd[CHILDREN].get(node.rawValue);
         if (child) {
           i = await traverseAndBuild(child.cmd, ast, getNames, ++i, options, args, env, errors);
-          continue;
+          break;
         } else {
           lastCommand = true;
         }
 
         if (lastCommand) {
-          for (const [key, builder] of maps.arg) {
-            const { validatedValue, isError } = await validate(node.rawValue, builder, errors);
-            if (isError) continue;
+          const arg = mappers.arg[argIndex++];
+          if (!arg) break;
 
-            if (isArrayBuilder(builder)) {
-              if (!toValidateArgs.get(builder)) toValidateArgs.set(builder, [key]);
-              toValidateArgs.get(builder)?.push(validatedValue);
-            } else if (isSingleBuilder(builder)) {
-              args[key] = validatedValue;
-            }
-          }
+          const { validatedValue, isError } = await validate(node.rawValue, arg, errors);
+          if (isError) break;
+
+          args[arg.__key] = validatedValue;
         }
+
+        break;
       }
     }
 
     i++;
   }
 
-  for (const [key, builder] of maps.env) {
-    const { validatedValue, isError } = await validate(process.env[key]!, builder, errors);
-    if (isError) continue;
-
-    if (isArrayBuilder(builder)) {
-      if (!toValidateEnv.get(builder)) toValidateEnv.set(builder, [key]);
-      toValidateEnv.get(builder)?.push(validatedValue);
-    } else if (isSingleBuilder(builder)) {
-      env[key] = validatedValue;
-    }
-  }
-
   for (const [builder, [key, ...values]] of toValidateOptions) {
     options[key] = (await builder[VALIDATOR]?.["~standard"].validate(values)) ?? values;
-  }
-  for (const [builder, [key, ...values]] of toValidateArgs) {
-    args[key] = (await builder[VALIDATOR]?.["~standard"].validate(values)) ?? values;
-  }
-  for (const [builder, [key, ...values]] of toValidateEnv) {
-    env[key] = (await builder[VALIDATOR]?.["~standard"].validate(values)) ?? values;
   }
 
   return i;
