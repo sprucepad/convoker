@@ -1,5 +1,6 @@
+import process from "node:process";
 import { CHILDREN, INPUT, type AnyCommand } from ".";
-import type { AST, ASTNode, Parser } from "./plugin";
+import type { AST, Parser } from "./plugin";
 import type { InferOptions, InferPositional } from "../types/infer";
 import type { Flatten } from "../types/utils";
 import {
@@ -62,6 +63,35 @@ export async function traverseAndBuild(
 ) {
   const input = flatten(cmd[INPUT]);
 
+  const maps = input.reduce(
+    (acc, obj) => {
+      for (const key in obj) {
+        const builder = obj[key]!;
+        switch (builder[KIND]) {
+          case "env":
+            acc.env.set(key, builder);
+            break;
+          case "option":
+            acc.option.set(key, builder);
+            break;
+          case "positional":
+            acc.arg.set(key, builder);
+            break;
+          default:
+            const exhaustive: never = builder[KIND];
+            throw new Error(exhaustive);
+        }
+      }
+
+      return acc;
+    },
+    {
+      option: new Map<string, AnyBuilder>(),
+      arg: new Map<string, AnyBuilder>(),
+      env: new Map<string, AnyBuilder>(),
+    },
+  );
+
   const toValidateOptions = new Map<AnyArrayBuilder, [string, ...any[]]>();
   const toValidateArgs = new Map<AnyArrayBuilder, [string, ...any[]]>();
   const toValidateEnv = new Map<AnyArrayBuilder, [string, ...any[]]>();
@@ -71,37 +101,32 @@ export async function traverseAndBuild(
     const node = ast[i]!;
     switch (node.type) {
       case "option": {
-        for (const obj of input) {
-          for (const key in obj) {
-            if (obj[key]?.[KIND] !== "option") continue;
+        for (const [key, builder] of maps.option) {
+          const names = getNames(builder[NAMES] ?? [key]);
+          if (!names.some((name) => name && node.names.includes(name))) continue;
 
-            const builder = obj[key];
-            const names = getNames(builder[NAMES] ?? [key]);
-            if (!names.some((name) => name && node.names.includes(name))) continue;
-
-            let value =
-              builder[TYPE] === "boolean" || builder[TYPE] === "bool"
-                ? Boolean(node.value ?? true)
-                : node.value;
-            if (!value && builder[REQUIRED]) {
-              const valueNode = ast[++i];
-              if (!valueNode) {
-                errors.push(new Error(`Missing value for ${builder[HELP_STR]}!`));
-                continue;
-              }
-
-              value = valueNode.rawValue;
+          let value =
+            builder[TYPE] === "boolean" || builder[TYPE] === "bool"
+              ? Boolean(node.value ?? true)
+              : node.value;
+          if (!value && builder[REQUIRED]) {
+            const valueNode = ast[++i];
+            if (!valueNode) {
+              errors.push(new Error(`Missing value for ${builder[HELP_STR]}!`));
+              continue;
             }
 
-            const { validatedValue, isError } = await validate(node, builder, errors);
-            if (isError) continue;
+            value = valueNode.rawValue;
+          }
 
-            if (isArrayBuilder(builder)) {
-              if (!toValidateOptions.get(builder)) toValidateOptions.set(builder, [key]);
-              toValidateOptions.get(builder)?.push(validatedValue);
-            } else if (isSingleBuilder(builder)) {
-              options[key] = validatedValue;
-            }
+          const { validatedValue, isError } = await validate(node.rawValue, builder, errors);
+          if (isError) continue;
+
+          if (isArrayBuilder(builder)) {
+            if (!toValidateOptions.get(builder)) toValidateOptions.set(builder, [key]);
+            toValidateOptions.get(builder)?.push(validatedValue);
+          } else if (isSingleBuilder(builder)) {
+            options[key] = validatedValue;
           }
         }
         break;
@@ -116,28 +141,34 @@ export async function traverseAndBuild(
         }
 
         if (lastCommand) {
-          for (const obj of input) {
-            for (const key in obj) {
-              if (obj[key]?.[KIND] !== "positional") continue;
-              const builder = obj[key];
+          for (const [key, builder] of maps.arg) {
+            const { validatedValue, isError } = await validate(node.rawValue, builder, errors);
+            if (isError) continue;
 
-              const { validatedValue, isError } = await validate(node, builder, errors);
-              if (isError) continue;
-
-              if (isArrayBuilder(builder)) {
-                if (!toValidateArgs.get(builder)) toValidateArgs.set(builder, [key]);
-                toValidateArgs.get(builder)?.push(validatedValue);
-              } else if (isSingleBuilder(builder)) {
-                args[key] = validatedValue;
-              }
+            if (isArrayBuilder(builder)) {
+              if (!toValidateArgs.get(builder)) toValidateArgs.set(builder, [key]);
+              toValidateArgs.get(builder)?.push(validatedValue);
+            } else if (isSingleBuilder(builder)) {
+              args[key] = validatedValue;
             }
           }
         }
       }
-      // TODO env
     }
 
     i++;
+  }
+
+  for (const [key, builder] of maps.env) {
+    const { validatedValue, isError } = await validate(process.env[key]!, builder, errors);
+    if (isError) continue;
+
+    if (isArrayBuilder(builder)) {
+      if (!toValidateEnv.get(builder)) toValidateEnv.set(builder, [key]);
+      toValidateEnv.get(builder)?.push(validatedValue);
+    } else if (isSingleBuilder(builder)) {
+      env[key] = validatedValue;
+    }
   }
 
   for (const [builder, [key, ...values]] of toValidateOptions) {
@@ -162,11 +193,11 @@ type ValidationResult =
   | { validatedValue: any; isError: false };
 
 async function validate(
-  node: ASTNode,
+  value: string,
   builder: AnyBuilder,
   errors: Error[],
 ): Promise<ValidationResult> {
-  const convertedValue = convert(node.rawValue, builder[TYPE]);
+  const convertedValue = convert(value, builder[TYPE]);
   const validatedValue = await (
     isArrayBuilder(builder) ? builder[VALIDATOR_ARRAY] : builder[VALIDATOR]
   )?.["~standard"].validate(convertedValue);
