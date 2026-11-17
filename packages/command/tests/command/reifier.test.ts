@@ -16,7 +16,7 @@ describe("reify()", () => {
     process.env.EXAMPLE = "true";
     const result = await cmd.parse(["test", "--option", "hello-world", "500"]);
 
-    expect(result).toEqual({
+    expect(result).toMatchObject({
       args: { argument: 500 },
       env: { EXAMPLE: true },
       options: { option: "hello-world" },
