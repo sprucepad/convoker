@@ -14,7 +14,7 @@ describe("Builder types", () => {
           v.transform(() => 5),
         ),
       )
-      .default("world");
+      .default(5);
 
     type Types =
       typeof builder extends Builder<any, any, infer Required, infer Resolved, infer HasDefault>
@@ -38,7 +38,7 @@ describe("Builder types", () => {
           v.transform(() => 5),
         ),
       )
-      .default(["world"]);
+      .default(5);
 
     type Types =
       typeof builder extends Builder<any, any, infer Required, infer Resolved, infer HasDefault>
@@ -49,7 +49,7 @@ describe("Builder types", () => {
           }
         : never;
 
-    expectTypeOf<Types["Resolved"]>().toBeNumber();
+    expectTypeOf<Types["Resolved"]>().toExtend<number>();
     expectTypeOf<Types["Required"]>().toExtend<true>();
     expectTypeOf<Types["HasDefault"]>().toExtend<true>();
   });
