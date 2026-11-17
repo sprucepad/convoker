@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "self": "oxnode src/main.ts",
+    "self": "oxnode --conditions='::convoker/source' src/main.ts",
     "check": "tsc --noEmit"
   },
   "dependencies": {

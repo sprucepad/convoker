@@ -43,9 +43,11 @@ export class Builder<
   public [IS_INHERITED]!: TIsInherited;
   public [NAMES]?: string[];
   public [VALIDATOR]?: StandardSchemaV1<TType, any>;
-  public [DEFAULT]?: TType;
+  public [DEFAULT]?: TResolved;
 
-  public default(val?: TType): Rebuild<this, TType, TKind, true, TResolved, true, TIsInherited> {
+  public default(
+    val?: TResolved,
+  ): Rebuild<this, TType, TKind, true, TResolved, true, TIsInherited> {
     this[DEFAULT] = val;
     return this as any;
   }

@@ -1,3 +1,5 @@
+import process from "node:process";
+
 import type { Resolvable } from "../types/utils";
 import type { Input } from "../input/builders";
 import type { InferEnv, InferInherited, InferOptions, InferPositional } from "../types/infer";
@@ -145,10 +147,17 @@ export class Command<TInput = {}, TInherited = {}, TPlugins = []> {
     return reify(argv, this as any);
   }
 
-  public async run(argv = process.argv.slice(2)) {
-    const cst = await this.parse(argv);
+  public async run(
+    argv = process.argv.slice(2),
+    opts?: { exit?: boolean | ((code: number) => Resolvable<void>) },
+  ) {
+    const cst = await reify(argv, this as any, "run");
 
-    // TODO run actions and middleware
+    const code = await cst.chain();
+
+    const { exit = true } = opts ?? {};
+    if (typeof exit === "function") await exit(code);
+    else if (exit) process.exit(code);
 
     return cst;
   }

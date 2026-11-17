@@ -1,10 +1,12 @@
 import process from "node:process";
-import { CHILDREN, INPUT, PARSER, PLUGINS, type AnyCommand } from ".";
+
+import { CHILDREN, FN, INPUT, PARSER, PLUGINS, type AnyCommand, type MiddlewareFn } from ".";
 import type { AST } from "./plugin";
 import type { InferOptions, InferPositional } from "../types/infer";
 import type { Flatten } from "../types/utils";
 import {
   BUILDER_TYPE,
+  DEFAULT,
   HELP_STR,
   KIND,
   NAMES,
@@ -25,12 +27,17 @@ export interface ConcreteCLITree<TInputs extends readonly unknown[], TInput = Fl
   args: InferPositional<TInput>;
   options: InferOptions<TInput>;
   env: InferOptions<TInput>;
+  chain: () => Promise<number>;
   command: AnyCommand;
 
   errors?: Error[];
 }
 
-export async function reify(argv: string[], cmd: AnyCommand): Promise<ConcreteCLITree<any, any>> {
+export async function reify(
+  argv: string[],
+  cmd: AnyCommand,
+  stage: "parse" | "run" = "parse",
+): Promise<ConcreteCLITree<any, any>> {
   const options: any = {};
   const args: any = {};
   const env: any = {};
@@ -38,21 +45,39 @@ export async function reify(argv: string[], cmd: AnyCommand): Promise<ConcreteCL
 
   const parser = cmd[PARSER];
   const pluginHost = cmd[PLUGINS];
-  const ref = { cmd };
+  const ref = { cmd, middleware: [] };
 
-  await pluginHost.beforeParse({ cmd: ref.cmd, stage: "parse" });
+  await pluginHost.beforeParse({ cmd: ref.cmd, stage });
 
   const ast = await parser.parse(argv);
   await traverseAndBuild(ref, ast, parser.getNames.bind(parser), 0, options, args, env, errors);
 
-  const parseResult = { command: ref.cmd, options, args, env };
-  await pluginHost.afterParse({ cmd: ref.cmd, stage: "parse", parseResult });
+  const props = { args, options, env };
+  const parseResult = {
+    command: ref.cmd,
+    chain: createChain(props, ref.middleware, ref.cmd),
+    ...props,
+  };
+  await pluginHost.afterParse({ cmd: ref.cmd, stage, parseResult });
 
   return parseResult;
 }
 
+function createChain(
+  ctx: Parameters<MiddlewareFn<any, any>>[0],
+  middlewares: MiddlewareFn<any, any>[],
+  cmd: AnyCommand,
+) {
+  async function run(i: number): Promise<number> {
+    if (i >= middlewares.length) return (await cmd[FN]?.(ctx)) ?? 0;
+    else return (await middlewares[i]!(ctx, () => run(i + 1))) ?? 0;
+  }
+
+  return () => run(0);
+}
+
 export async function traverseAndBuild(
-  ref: { cmd: AnyCommand },
+  ref: { cmd: AnyCommand; middleware: MiddlewareFn<any, any>[] },
   ast: AST,
   getNames: (names: string[]) => (string | null | undefined)[],
   i: number,
@@ -92,6 +117,13 @@ export async function traverseAndBuild(
     },
   );
 
+  const toValidateOptions = new Map<string, any[]>();
+  const alreadySetOptions = new Set<string>();
+
+  let lastCommand = false;
+  let variadicArg: { builder: AnyArrayBuilder; key: string; values: any[] } | undefined;
+  let argIndex = 0;
+
   outer: for (const [key, builder] of mappers.env) {
     if (isArrayBuilder(builder)) {
       const split = process.env[key]!.split(",");
@@ -104,26 +136,27 @@ export async function traverseAndBuild(
         arr.push(validatedValue);
       }
 
-      const validationResult = await builder[VALIDATOR]?.["~standard"].validate(arr);
-      if (validationResult?.issues) {
-        errors.push(new Error("Validation error!"));
-        continue;
-      }
-
-      env[key] = validationResult?.value ?? arr;
-    } else if (isSingleBuilder(builder)) {
-      const { validatedValue, isError } = await validate(process.env[key]!, builder, errors);
+      const { validatedValue, isError } = await validateArray(arr, builder, errors);
       if (isError) continue;
 
       env[key] = validatedValue;
+    } else if (isSingleBuilder(builder)) {
+      let value = process.env[key];
+      if (value != null) {
+        const { validatedValue, isError } = await validate(value, builder, errors);
+        if (isError) continue;
+
+        value = validatedValue;
+      } else value = builder[DEFAULT];
+
+      if (value == null && builder[REQUIRED]) {
+        errors.push(new Error(`Missing environment variable ${key}!`));
+        continue;
+      }
+
+      env[key] = value;
     }
   }
-
-  const toValidateOptions = new Map<AnyArrayBuilder, [string, ...any[]]>();
-
-  let lastCommand = false;
-  let variadicArg: { builder: AnyArrayBuilder; key: string; values: any[] } | undefined;
-  let argIndex = 0;
 
   while (i < ast.length) {
     const node = ast[i]!;
@@ -131,11 +164,11 @@ export async function traverseAndBuild(
       case "option": {
         for (const [key, builder] of mappers.option) {
           const names = getNames(builder[NAMES] ?? [key]);
-          if (!names.some((name) => name && node.names.includes(name))) break;
+          if (!names.some((name) => name && node.names.includes(name))) continue;
 
           let value =
             builder[TYPE] === "boolean" || builder[TYPE] === "bool"
-              ? Boolean(node.value ?? true)
+              ? Boolean(node.value ?? builder[DEFAULT] ?? true)
               : node.value;
           if (value == null) {
             const valueNode = ast[i + 1];
@@ -144,24 +177,27 @@ export async function traverseAndBuild(
             }
           }
 
-          if (value == null && builder[REQUIRED]) {
-            errors.push(new Error(`Missing value for ${builder[HELP_STR]}!`));
-            break;
-          }
-
           let validatedValue: any;
           if (typeof value === "string") {
             const result = await validate(value, builder, errors);
-            if (result.isError) break;
+            if (result.isError) continue;
 
             validatedValue = result.validatedValue;
+          } else if (value == null) {
+            value = builder[DEFAULT];
+            if (value == null && builder[REQUIRED]) {
+              errors.push(new Error(`Missing option ${builder[HELP_STR]}!`));
+            }
           } else validatedValue = value;
 
           if (isArrayBuilder(builder)) {
-            if (!toValidateOptions.get(builder)) toValidateOptions.set(builder, [key]);
-            toValidateOptions.get(builder)?.push(validatedValue);
+            if (!toValidateOptions.get(key)) toValidateOptions.set(key, []);
+            toValidateOptions.get(key)?.push(validatedValue);
+
+            alreadySetOptions.add(key);
           } else if (isSingleBuilder(builder)) {
             options[key] = validatedValue;
+            alreadySetOptions.add(key);
           }
         }
         break;
@@ -212,11 +248,20 @@ export async function traverseAndBuild(
     i++;
   }
 
-  for (const [builder, [key, ...values]] of toValidateOptions) {
-    const { validatedValue, isError } = await validateArray(values, builder, errors);
-    if (isError) continue;
+  for (const [key, builder] of mappers.option) {
+    if (toValidateOptions.get(key)) {
+      const values = toValidateOptions.get(key)!;
+      const { validatedValue, isError } = await validateArray(values, builder, errors);
+      if (isError) continue;
 
-    options[key] = validatedValue;
+      options[key] = validatedValue;
+    } else if (!alreadySetOptions.has(key)) {
+      if (builder[DEFAULT] != null) options[key] = builder[DEFAULT];
+      else if (builder[REQUIRED]) {
+        errors.push(new Error(`Missing value for option ${builder[HELP_STR]}!`));
+        continue;
+      }
+    }
   }
 
   if (variadicArg) {
@@ -228,6 +273,24 @@ export async function traverseAndBuild(
     if (isError) return i;
 
     args[variadicArg.key] = validatedValue;
+  }
+
+  if (argIndex < mappers.arg.length) {
+    let missingStart = argIndex;
+    const missingEnd = mappers.arg.length;
+    const missingBuilders = mappers.arg.slice(missingStart);
+
+    for (const builder of missingBuilders) {
+      if (builder[DEFAULT]) {
+        args[builder.__key] = builder[DEFAULT];
+        argIndex++;
+      }
+    }
+
+    if (argIndex < missingEnd) {
+      errors.push(new Error(`Missing arguments ${missingStart} through ${missingEnd}!`));
+      return i;
+    }
   }
 
   return i;
