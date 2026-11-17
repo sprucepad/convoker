@@ -19,10 +19,12 @@ describe("Command types", () => {
 
     command1.add(command2);
 
-    type OneInput = typeof command1 extends Command<infer T, infer I, infer P> ? [T, I, P] : never;
-    type TwoInput = typeof command2 extends Command<infer T, infer I, infer P> ? [T, I, P] : never;
+    type OneInput =
+      typeof command1 extends Command<infer T, infer I, infer P> ? Flatten<[T, I, P]> : never;
+    type TwoInput =
+      typeof command2 extends Command<infer T, infer I, infer P> ? Flatten<[T, I, P]> : never;
 
-    expectTypeOf<TwoInput[1]>().toExtend<[...OneInput[0], {}]>();
+    expectTypeOf<TwoInput[1]>().toExtend<OneInput[0]>();
   });
 
   it("has correct action function types", () => {

@@ -38,20 +38,21 @@ export async function reify(argv: string[], cmd: AnyCommand): Promise<ConcreteCL
 
   const parser = cmd[PARSER];
   const pluginHost = cmd[PLUGINS];
+  const ref = { cmd };
 
-  await pluginHost.beforeParse({ cmd, stage: "parse" });
+  await pluginHost.beforeParse({ cmd: ref.cmd, stage: "parse" });
 
   const ast = await parser.parse(argv);
-  await traverseAndBuild(cmd, ast, parser.getNames.bind(parser), 0, options, args, env, errors);
+  await traverseAndBuild(ref, ast, parser.getNames.bind(parser), 0, options, args, env, errors);
 
-  const parseResult = { command: cmd, options, args, env };
-  await pluginHost.afterParse({ cmd, stage: "parse", parseResult });
+  const parseResult = { command: ref.cmd, options, args, env };
+  await pluginHost.afterParse({ cmd: ref.cmd, stage: "parse", parseResult });
 
   return parseResult;
 }
 
 export async function traverseAndBuild(
-  cmd: AnyCommand,
+  ref: { cmd: AnyCommand },
   ast: AST,
   getNames: (names: string[]) => (string | null | undefined)[],
   i: number,
@@ -60,7 +61,7 @@ export async function traverseAndBuild(
   env: any,
   errors: Error[],
 ) {
-  const input = flatten(cmd[INPUT]);
+  const input = flatten(ref.cmd[INPUT]);
 
   const mappers = input.reduce(
     (acc, obj) => {
@@ -136,18 +137,25 @@ export async function traverseAndBuild(
             builder[TYPE] === "boolean" || builder[TYPE] === "bool"
               ? Boolean(node.value ?? true)
               : node.value;
-          if (value == null && builder[REQUIRED]) {
-            const valueNode = ast[++i];
-            if (!valueNode) {
-              errors.push(new Error(`Missing value for ${builder[HELP_STR]}!`));
-              break;
+          if (value == null) {
+            const valueNode = ast[i + 1];
+            if (valueNode?.type === "option" || valueNode?.type === "value") {
+              value = valueNode.rawValue;
             }
-
-            value = valueNode.rawValue;
           }
 
-          const { validatedValue, isError } = await validate(node.rawValue, builder, errors);
-          if (isError) break;
+          if (value == null && builder[REQUIRED]) {
+            errors.push(new Error(`Missing value for ${builder[HELP_STR]}!`));
+            break;
+          }
+
+          let validatedValue: any;
+          if (typeof value === "string") {
+            const result = await validate(value, builder, errors);
+            if (result.isError) break;
+
+            validatedValue = result.validatedValue;
+          } else validatedValue = value;
 
           if (isArrayBuilder(builder)) {
             if (!toValidateOptions.get(builder)) toValidateOptions.set(builder, [key]);
@@ -158,11 +166,13 @@ export async function traverseAndBuild(
         }
         break;
       }
+      case "value":
       case "positional": {
         if (!lastCommand) {
-          const child = cmd[CHILDREN].get(node.rawValue);
+          const child = ref.cmd[CHILDREN].get(node.rawValue);
           if (child) {
-            i = await traverseAndBuild(child.cmd, ast, getNames, ++i, options, args, env, errors);
+            ref.cmd = child.cmd;
+            i = await traverseAndBuild(ref, ast, getNames, ++i, options, args, env, errors);
             break;
           } else {
             lastCommand = true;
@@ -191,6 +201,11 @@ export async function traverseAndBuild(
         }
 
         break;
+      }
+
+      default: {
+        const exhaustive: never = node;
+        throw new Error(exhaustive);
       }
     }
 
@@ -242,7 +257,7 @@ async function validate(
 
   return {
     isError: false,
-    validatedValue: validatedValue ?? convertedValue,
+    validatedValue: validatedValue?.value ?? convertedValue,
   };
 }
 

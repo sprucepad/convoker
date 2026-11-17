@@ -75,6 +75,6 @@ export interface NodeOption {
 }
 
 export interface NodePositional {
-  type: "positional";
+  type: "positional" | "value";
   rawValue: string;
 }

@@ -51,7 +51,7 @@ export type AnyCommand = Command<any, any, any>;
 export class Command<TInput = {}, TInherited = {}, TPlugins = []> {
   public [ALIASES]: string[];
   public [META]: Partial<Record<"version" | (string & {}), any>> = {};
-  public [PARSER] = gnu({ verbose: false });
+  public [PARSER] = gnu();
   public [MIDDLEWARE]: MiddlewareFn<any, any>[] = [];
   public [CHILDREN] = new Map<string, { cmd: AnyCommand; aliasFor?: string }>();
   public [PLUGINS]: PluginHost = new PluginHost();
