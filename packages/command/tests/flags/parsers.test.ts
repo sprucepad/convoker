@@ -74,7 +74,7 @@ describe("GNU parser", () => {
         "-g",
         "also-yes-value",
       ]);
-      console.log(JSON.stringify(ast));
+
       expect(ast).toEqual<AST>([
         {
           type: "option",

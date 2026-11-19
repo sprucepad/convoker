@@ -13,10 +13,15 @@ describe("reify()", () => {
       .action(() => {});
     const cmd = new Command().add(c2);
 
-    process.env.EXAMPLE = "true";
-    const result = await cmd.parse(["test", "--option", "hello-world", "500"]);
+    const result = await cmd.parse({
+      argv: ["test", "--option", "hello-world", "500"],
+      env: {
+        EXAMPLE: "true",
+      },
+    });
 
     expect(result).toMatchObject({
+      errors: [],
       args: { argument: 500 },
       env: { EXAMPLE: true },
       options: { option: "hello-world" },
@@ -33,8 +38,10 @@ describe("reify()", () => {
       })
       .action(() => {});
 
-    process.env.EXAMPLE = undefined;
-    const result = await cmd.parse([]);
+    const result = await cmd.parse({
+      argv: [],
+      env: {},
+    });
 
     expect(result).toMatchObject({
       args: { argument: 500 },

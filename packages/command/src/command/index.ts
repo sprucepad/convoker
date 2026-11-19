@@ -144,17 +144,20 @@ export class Command<TInput = {}, TInherited = {}, TPlugins = []> {
     throw new Error("TODO: help messages");
   }
 
-  public async parse(
-    argv = process.argv.slice(2),
-  ): Promise<ConcreteCLITree<[TInherited, TInput, TPlugins]>> {
-    return reify(argv, this as any);
+  public async parse({ argv = process.argv.slice(2), env = process.env } = {}): Promise<
+    ConcreteCLITree<[TInherited, TInput, TPlugins]>
+  > {
+    return reify(argv, env, this as any);
   }
 
   public async run(
-    argv = process.argv.slice(2),
+    {
+      argv = process.argv.slice(2),
+      env = process.env,
+    }: { argv?: string[]; env?: Record<string, string | undefined> } = {},
     opts?: { exit?: boolean | ((code: number) => Resolvable<void>) },
   ) {
-    const cst = await reify(argv, this as any, "run");
+    const cst = await reify(argv, env, this as any, "run");
     if (cst.errors) {
       this.printHelpMessage(cst.errors);
     } else {

@@ -38,8 +38,11 @@ export class MissingEnvError extends ConvokerError {
 }
 
 export class WrongTypeError extends ConvokerError {
-  constructor(public expected: string) {
-    super(`wrong type! expected ${expected}`);
+  constructor(
+    public value: string,
+    public expected: string,
+  ) {
+    super(`wrong type! \`${value}\` is not ${expected}`);
   }
 }
 

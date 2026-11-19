@@ -1,5 +1,3 @@
-import process from "node:process";
-
 import { CHILDREN, FN, INPUT, PARSER, PLUGINS, type AnyCommand, type MiddlewareFn } from ".";
 import {
   MissingEnvError,
@@ -37,11 +35,12 @@ export interface ConcreteCLITree<TInputs extends readonly unknown[], TInput = Fl
   chain: () => Promise<number>;
   command: AnyCommand;
 
-  errors?: Error[];
+  errors: Error[];
 }
 
 export async function reify(
   argv: string[],
+  rawEnv: Record<string, string | undefined>,
   cmd: AnyCommand,
   stage: "parse" | "run" = "parse",
 ): Promise<ConcreteCLITree<any, any>> {
@@ -57,14 +56,26 @@ export async function reify(
   await pluginHost.beforeParse({ cmd: ref.cmd, stage });
 
   const ast = await parser.parse(argv);
-  await traverseAndBuild(ref, ast, parser.getNames.bind(parser), 0, options, args, env, errors);
+  await traverseAndBuild(
+    ref,
+    rawEnv,
+    ast,
+    parser.getNames.bind(parser),
+    0,
+    options,
+    args,
+    env,
+    errors,
+  );
 
   const props = { args, options, env };
   const parseResult = {
+    errors,
     command: ref.cmd,
     chain: createChain(props, ref.middleware, ref.cmd),
     ...props,
   };
+
   await pluginHost.afterParse({ cmd: ref.cmd, stage, parseResult });
 
   return parseResult;
@@ -85,6 +96,7 @@ function createChain(
 
 export async function traverseAndBuild(
   ref: { cmd: AnyCommand; middleware: MiddlewareFn<any, any>[] },
+  rawEnv: Record<string, string | undefined>,
   ast: AST,
   getNames: (names: string[]) => (string | null | undefined)[],
   i: number,
@@ -133,7 +145,7 @@ export async function traverseAndBuild(
 
   outer: for (const [key, builder] of mappers.env) {
     if (isArrayBuilder(builder)) {
-      const split = process.env[key]!.split(",");
+      const split = rawEnv[key]?.split(",") ?? [];
 
       const arr: any[] = [];
       for (const rawValue of split) {
@@ -148,7 +160,7 @@ export async function traverseAndBuild(
 
       env[key] = validatedValue;
     } else if (isSingleBuilder(builder)) {
-      let value = process.env[key];
+      let value = rawEnv[key];
       if (value != null) {
         const { validatedValue, isError } = await validate(value, builder, errors);
         if (isError) continue;
@@ -169,9 +181,12 @@ export async function traverseAndBuild(
     const node = ast[i]!;
     switch (node.type) {
       case "option": {
+        let found = false;
         for (const [key, builder] of mappers.option) {
           const names = getNames(builder[NAMES] ?? [key]);
           if (!names.some((name) => name && node.names.includes(name))) continue;
+
+          found = true;
 
           let value =
             builder[TYPE] === "boolean" || builder[TYPE] === "bool"
@@ -202,15 +217,15 @@ export async function traverseAndBuild(
             toValidateOptions.get(key)?.push(validatedValue);
 
             alreadySetOptions.add(key);
-            break;
           } else if (isSingleBuilder(builder)) {
             options[key] = validatedValue;
             alreadySetOptions.add(key);
-            break;
           }
+
+          break;
         }
 
-        errors.push(new UnknownOptionError(`${node.prefix}${node.names.join("")}`));
+        if (!found) errors.push(new UnknownOptionError(`${node.prefix}${node.names.join("")}`));
         break;
       }
       case "value":
@@ -219,7 +234,7 @@ export async function traverseAndBuild(
           const child = ref.cmd[CHILDREN].get(node.rawValue);
           if (child) {
             ref.cmd = child.cmd;
-            i = await traverseAndBuild(ref, ast, getNames, ++i, options, args, env, errors);
+            i = await traverseAndBuild(ref, rawEnv, ast, getNames, ++i, options, args, env, errors);
             break;
           } else {
             lastCommand = true;
@@ -236,7 +251,7 @@ export async function traverseAndBuild(
         } else {
           const arg = mappers.arg[argIndex++];
           if (!arg) {
-            errors.push(new TooManyArgumentsError(argIndex - 1));
+            errors.push(new TooManyArgumentsError(argIndex));
             break;
           }
 
@@ -372,9 +387,9 @@ function convert(raw: string, type: string) {
       }
     case "number":
       const n = Number(raw);
-      return Number.isNaN(n) ? new WrongTypeError(type) : undefined;
+      return Number.isNaN(n) ? new WrongTypeError(raw, type) : n;
     case "boolean":
-      return raw === "true" ? true : raw === "false" ? false : new WrongTypeError(type);
+      return raw === "true" ? true : raw === "false" ? false : new WrongTypeError(raw, type);
     case "string":
       return raw;
     default:
