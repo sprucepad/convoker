@@ -1,0 +1,17 @@
+{
+  "name": "@convoker/example",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "self": "oxnode --conditions='::convoker/source' src/main.ts",
+    "check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@convoker/command": "workspace:*"
+  },
+  "devDependencies": {
+    "@oxc-node/cli": "^1.0.1",
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  }
+}

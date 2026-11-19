@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "es2025",
+    "module": "preserve",
+    "moduleDetection": "force",
+    "lib": ["es2025", "dom", "dom.iterable"],
+    "customConditions": ["::convoker/source"],
+    "allowImportingTsExtensions": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "allowJs": true,
+    "noEmit": true
+  }
+}

@@ -1,16 +1,9 @@
-# node_modules
+# dependencies
+.pnpm-store/
 node_modules/
-
-# build output
-*.tsbuildinfo
-dist/
 
 # turborepo
 .turbo/
 
-# env files
-.env*
-!.env.example
-
-# generated code
-apps/web/src/content/docs/api/
+# build output
+dist/

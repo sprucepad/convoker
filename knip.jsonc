@@ -1,0 +1,10 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema-jsonc.json",
+  "tags": ["-lintignore"],
+
+  "ignoreDependencies": ["oxlint-tsgolint"],
+  "workspaces": {
+    "apps/**/*": {},
+    "packages/**/*": {},
+  },
+}
