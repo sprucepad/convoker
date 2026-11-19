@@ -30,12 +30,12 @@ const program = new Command("static-server")
   .action(({ options, args }) => {
     console.log(options, args);
     // ^ options: {
-    //   hosts: string[],
-    //   ports: number[],
-    // }
+    //     hosts: string[],
+    //     ports: number[],
+    //   }
     // ^ args: {
-    //   path: string,
-    // }
+    //     path: string,
+    //   }
   })
   .add("example", (c) =>
     c.description("Example subcommand!").action(() => console.log("Hello, World!")),

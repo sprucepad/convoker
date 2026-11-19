@@ -7,6 +7,7 @@ import type { Flatten } from "../types/utils";
 import { gnu } from "../flags/parsers";
 import { reify, type ConcreteCLITree } from "./reifier";
 import { PluginHost, type Parser, type Plugin } from "./plugin";
+import { ConvokerError } from "./errors";
 
 export const ALIASES = Symbol("__aliases__");
 export const DESCRIPTION = Symbol("__description__");
@@ -137,8 +138,10 @@ export class Command<TInput = {}, TInherited = {}, TPlugins = []> {
     return this;
   }
 
-  public printHelpMessage() {
-    throw new Error("TODO: not implemented");
+  public printHelpMessage(errors?: unknown[]) {
+    void errors;
+    void ConvokerError;
+    throw new Error("TODO: help messages");
   }
 
   public async parse(
@@ -152,12 +155,19 @@ export class Command<TInput = {}, TInherited = {}, TPlugins = []> {
     opts?: { exit?: boolean | ((code: number) => Resolvable<void>) },
   ) {
     const cst = await reify(argv, this as any, "run");
+    if (cst.errors) {
+      this.printHelpMessage(cst.errors);
+    } else {
+      try {
+        const code = await cst.chain();
 
-    const code = await cst.chain();
-
-    const { exit = true } = opts ?? {};
-    if (typeof exit === "function") await exit(code);
-    else if (exit) process.exit(code);
+        const { exit = true } = opts ?? {};
+        if (typeof exit === "function") await exit(code);
+        else if (exit) process.exit(code);
+      } catch (e) {
+        this.printHelpMessage([e]);
+      }
+    }
 
     return cst;
   }
@@ -171,3 +181,4 @@ type GetPluginExtensions<T extends Config[]> = {
 
 export * as reifier from "./reifier";
 export * from "./plugin";
+// export * from "./errors";

@@ -23,4 +23,24 @@ describe("reify()", () => {
       command: c2,
     });
   });
+
+  it("applies defaults", async () => {
+    const cmd = new Command("test")
+      .input({
+        option: i.option("--option, -o [OPTIONAL]").default("defaultValue"),
+        argument: i.positional("[OPTIONAL:number]").default(500),
+        EXAMPLE: i.env("[OPTIONAL:boolean]").default(true),
+      })
+      .action(() => {});
+
+    process.env.EXAMPLE = undefined;
+    const result = await cmd.parse([]);
+
+    expect(result).toMatchObject({
+      args: { argument: 500 },
+      env: { EXAMPLE: true },
+      options: { option: "defaultValue" },
+      command: cmd,
+    });
+  });
 });

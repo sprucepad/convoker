@@ -36,12 +36,12 @@ const program = new Command("static-server")
   .action(({ options, args }) => {
     console.log(options, args);
     // ^ options: {
-    //   hosts: string[],
-    //   ports: number[],
-    // }
+    //     hosts: string[],
+    //     ports: number[],
+    //   }
     // ^ args: {
-    //   path: string,
-    // }
+    //     path: string,
+    //   }
   })
   .add("example", (c) =>
     c.description("Example subcommand!").action(() => console.log("Hello, World!")),
@@ -58,8 +58,7 @@ A customizable CLI interactivity library, for adding custom interactivity to you
 ```ts
 import * as keyboard from "@convoker/keyboard";
 
-// TODO
-// Design an API for this
+// TODO @convoker/keyboard API
 ```
 
 ## [Prompt](https://www.npmjs.com/package/@convoker/prompt)

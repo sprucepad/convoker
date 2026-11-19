@@ -57,16 +57,16 @@ export function gnu(opts?: { verbose?: boolean }) {
 }
 
 export function bsd(): Parser {
-  throw new Error("TODO: not implemented");
+  throw new Error("TODO: bsd parser");
 }
 
 export function keyValue(): Parser {
-  throw new Error("TODO: not implemented");
+  throw new Error("TODO: key=value parser");
 }
 
 export function windows(opts?: { verbose?: boolean }): Parser {
   void opts;
-  throw new Error("TODO: not implemented");
+  throw new Error("TODO: windows parser");
 }
 
 function longOpt(arg: string, prefix: string): NodeOption {

@@ -1,6 +1,15 @@
 import process from "node:process";
 
 import { CHILDREN, FN, INPUT, PARSER, PLUGINS, type AnyCommand, type MiddlewareFn } from ".";
+import {
+  MissingEnvError,
+  MissingOptionError,
+  TooFewArgumentsError,
+  TooManyArgumentsError,
+  UnknownOptionError,
+  ValidationError,
+  WrongTypeError,
+} from "./errors";
 import type { AST } from "./plugin";
 import type { InferOptions, InferPositional } from "../types/infer";
 import type { Flatten } from "../types/utils";
@@ -20,8 +29,6 @@ import {
   type Input,
   type InputObj,
 } from "../input/builders";
-
-// TODO proper errors that can be caught and handled in the help screen
 
 export interface ConcreteCLITree<TInputs extends readonly unknown[], TInput = Flatten<TInputs>> {
   args: InferPositional<TInput>;
@@ -150,7 +157,7 @@ export async function traverseAndBuild(
       } else value = builder[DEFAULT];
 
       if (value == null && builder[REQUIRED]) {
-        errors.push(new Error(`Missing environment variable ${key}!`));
+        errors.push(new MissingEnvError(key));
         continue;
       }
 
@@ -180,13 +187,13 @@ export async function traverseAndBuild(
           let validatedValue: any;
           if (typeof value === "string") {
             const result = await validate(value, builder, errors);
-            if (result.isError) continue;
+            if (result.isError) break;
 
             validatedValue = result.validatedValue;
           } else if (value == null) {
             value = builder[DEFAULT];
             if (value == null && builder[REQUIRED]) {
-              errors.push(new Error(`Missing option ${builder[HELP_STR]}!`));
+              errors.push(new MissingOptionError(builder[HELP_STR]));
             }
           } else validatedValue = value;
 
@@ -195,11 +202,15 @@ export async function traverseAndBuild(
             toValidateOptions.get(key)?.push(validatedValue);
 
             alreadySetOptions.add(key);
+            break;
           } else if (isSingleBuilder(builder)) {
             options[key] = validatedValue;
             alreadySetOptions.add(key);
+            break;
           }
         }
+
+        errors.push(new UnknownOptionError(`${node.prefix}${node.names.join("")}`));
         break;
       }
       case "value":
@@ -224,7 +235,10 @@ export async function traverseAndBuild(
           variadicArg.values.push(validatedValue);
         } else {
           const arg = mappers.arg[argIndex++];
-          if (!arg) break;
+          if (!arg) {
+            errors.push(new TooManyArgumentsError(argIndex - 1));
+            break;
+          }
 
           const { validatedValue, isError } = await validate(node.rawValue, arg, errors);
           if (isError) break;
@@ -258,7 +272,7 @@ export async function traverseAndBuild(
     } else if (!alreadySetOptions.has(key)) {
       if (builder[DEFAULT] != null) options[key] = builder[DEFAULT];
       else if (builder[REQUIRED]) {
-        errors.push(new Error(`Missing value for option ${builder[HELP_STR]}!`));
+        errors.push(new MissingOptionError(builder[HELP_STR]));
         continue;
       }
     }
@@ -288,7 +302,12 @@ export async function traverseAndBuild(
     }
 
     if (argIndex < missingEnd) {
-      errors.push(new Error(`Missing arguments ${missingStart} through ${missingEnd}!`));
+      errors.push(
+        new TooFewArgumentsError(
+          mappers.arg.filter((builder) => builder[REQUIRED]).length,
+          variadicArg ? undefined : missingEnd,
+        ),
+      );
       return i;
     }
   }
@@ -310,11 +329,16 @@ async function validate(
   errors: Error[],
 ): Promise<ValidationResult> {
   const convertedValue = convert(value, builder[TYPE]);
+  if (convertedValue instanceof Error) {
+    errors.push(convertedValue);
+    return { isError: true };
+  }
+
   const validatedValue = await (
     isArrayBuilder(builder) ? builder[VALIDATOR_ARRAY] : builder[VALIDATOR]
   )?.["~standard"].validate(convertedValue);
   if (validatedValue?.issues) {
-    errors.push(new Error("Validation error!"));
+    errors.push(new ValidationError(validatedValue.issues));
     return { isError: true };
   }
 
@@ -331,7 +355,7 @@ async function validateArray(
 ): Promise<ValidationResult> {
   const validationResult = await builder[VALIDATOR]?.["~standard"].validate(values);
   if (validationResult?.issues) {
-    errors.push(new Error("Validation error!"));
+    errors.push(new ValidationError(validationResult.issues));
     return { isError: true };
   }
 
@@ -341,13 +365,20 @@ async function validateArray(
 function convert(raw: string, type: string) {
   switch (type) {
     case "object":
-      return JSON.parse(raw);
+      try {
+        return JSON.parse(raw);
+      } catch (e) {
+        return e as SyntaxError;
+      }
     case "number":
-      return Number(raw);
+      const n = Number(raw);
+      return Number.isNaN(n) ? new WrongTypeError(type) : undefined;
     case "boolean":
-      return Boolean(raw);
-    default:
+      return raw === "true" ? true : raw === "false" ? false : new WrongTypeError(type);
+    case "string":
       return raw;
+    default:
+      throw new Error(`unknown type: ${type}!`);
   }
 }
 
